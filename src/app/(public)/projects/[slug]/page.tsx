@@ -18,7 +18,7 @@ import { useParams} from "next/navigation";
  
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 
-export function ProjectDetails() {
+export default function ProjectDetails() {
   const { id } = useParams();
 
   // normalize id to a string (useParams may return string[])

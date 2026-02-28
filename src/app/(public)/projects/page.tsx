@@ -9,7 +9,7 @@ import Button from "@/components/Button";
 import { MapPin, Home, Filter } from "lucide-react";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 
-export function Projects() {
+export default function Projects() {
   const [selectedFilter, setSelectedFilter] = useState("all");
 
   const allProjects = [

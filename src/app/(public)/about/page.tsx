@@ -3,7 +3,7 @@ import { CheckCircle2, Award, Target, Eye, TrendingUp, Users, Building2, Shield 
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 
  
-export function About() {
+export default function About() {
   const milestones = [
     { year: "2000", title: "Foundation", description: "Started with a vision to transform real estate" },
     { year: "2010", title: "Expansion", description: "Expanded to multiple cities across India" },
