@@ -118,7 +118,7 @@ export  default function Contact() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52]"
+                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52] focus:ring-2 focus:ring-[#1a3a52] transition-colors duration-200"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -137,7 +137,7 @@ export  default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52]"
+                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52] focus:ring-2 focus:ring-[#1a3a52] transition-colors duration-200"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -156,7 +156,7 @@ export  default function Contact() {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52]"
+                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52] focus:ring-2 focus:ring-[#1a3a52] transition-colors duration-200"
                     placeholder="+91 XXXXX XXXXX"
                   />
                 </div>
@@ -173,7 +173,7 @@ export  default function Contact() {
                     name="project"
                     value={formData.project}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52] bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-[#1a3a52] focus:ring-2 focus:ring-[#1a3a52] transition-colors duration-200 bg-white"
                   >
                     <option value="">Select a project</option>
                     <option value="ekam-heights">Ekam Heights</option>

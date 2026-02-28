@@ -24,7 +24,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -35,16 +35,16 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`text-sm tracking-wide transition-colors ${
+                className={`relative text-sm tracking-wide py-2 px-1 transition-all duration-200 ease-in-out ${
                   isActive(item.path)
-                    ? "text-[#1a3a52]"
-                    : "text-gray-600 hover:text-[#1a3a52]"
-                }`}
+                    ? "text-[#1a3a52] border-b-2 border-[#1a3a52]"
+                    : "text-gray-600 hover:text-[#1a3a52] hover:border-b-2 hover:border-[#1a3a52]"
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a3a52]`}
               >
                 {item.label}
               </Link>
@@ -53,7 +53,7 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-gray-600"
+            className="md:hidden text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a3a52]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -64,17 +64,17 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
-          <nav className="px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-gray-200 bg-white shadow-lg">
+          <nav className="px-4 py-6 space-y-4">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`block py-2 text-sm tracking-wide transition-colors ${
+                className={`block py-2 text-sm tracking-wide transition-colors duration-200 ease-in-out ${
                   isActive(item.path)
-                    ? "text-[#1a3a52]"
-                    : "text-gray-600"
-                }`}
+                    ? "text-[#1a3a52] border-l-4 border-[#1a3a52] pl-2"
+                    : "text-gray-600 hover:text-[#1a3a52]"
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a3a52]`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
