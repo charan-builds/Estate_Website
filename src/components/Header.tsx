@@ -1,13 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [keysPressed, setKeysPressed] = useState<string[]>([]);
 
   const navItems = [
     { label: "Home", path: "/" },
@@ -16,71 +19,107 @@ export default function Header() {
     { label: "Contact", path: "/contact" },
   ];
 
-  const isActive = (path: string) => {
-    if (path === "/") {
-      return pathname === "/";
+  /* 🔐 Hidden Admin Shortcut: Ctrl + Shift + A */
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      setKeysPressed((prev) => [...prev.slice(-2), e.key.toLowerCase()]);
     }
-    return pathname?.startsWith(path);
-  };
+
+    if (keysPressed.join("") === "controlshifta") {
+      router.push("/admin/login");
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [keysPressed, router]);
+
+  const isActive = (path: string) =>
+    path === "/" ? pathname === "/" : pathname?.startsWith(path);
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <div className="text-2xl font-serif text-[#1a3a52]">
-              Ekam Properties
+    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
+          {/* 🔰 LOGO + BRAND */}
+          <Link href="/" className="flex items-center gap-3 shrink-0">
+            <div className="relative h-12 w-12">
+              <Image
+                src="/logo.svg"
+                alt="Ekam Properties Logo"
+                fill
+                priority
+                className="object-contain"
+              />
+            </div>
+
+            <div className="flex flex-col leading-tight">
+              <span className="text-2xl font-serif text-[#1a3a52]">
+                Ekam Properties
+              </span>
+              <span className="text-xs text-gray-500">
+                TG RERA Certified Real Estate Agent
+              </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* 🧭 DESKTOP NAV */}
+          <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`relative text-sm tracking-wide py-2 px-1 transition-all duration-200 ease-in-out ${
+                className={`text-sm tracking-wide transition ${
                   isActive(item.path)
-                    ? "text-[#1a3a52] border-b-2 border-[#1a3a52]"
-                    : "text-gray-600 hover:text-[#1a3a52] hover:border-b-2 hover:border-[#1a3a52]"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a3a52]`}
+                    ? "text-[#1a3a52] font-medium"
+                    : "text-gray-600 hover:text-[#1a3a52]"
+                }`}
               >
                 {item.label}
               </Link>
             ))}
+
+            {/* 📞 WhatsApp CTA */}
+            <a
+              href="https://wa.me/917901324545?text=Hi%20Ekam%20Properties,%20I%20am%20interested%20in%20your%20projects."
+              target="_blank"
+              className="flex items-center gap-2 bg-[#1a3a52] text-white px-4 py-2 rounded hover:bg-[#234e6f]"
+            >
+              <Phone size={16} />
+              Enquire
+            </a>
           </nav>
 
-          {/* Mobile Menu Button */}
+          {/* 📱 MOBILE MENU */}
           <button
-            className="md:hidden text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a3a52]"
+            className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* 📱 MOBILE NAV */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white shadow-lg">
-          <nav className="px-4 py-6 space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`block py-2 text-sm tracking-wide transition-colors duration-200 ease-in-out ${
-                  isActive(item.path)
-                    ? "text-[#1a3a52] border-l-4 border-[#1a3a52] pl-2"
-                    : "text-gray-600 hover:text-[#1a3a52]"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a3a52]`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+        <div className="md:hidden bg-white border-t px-4 py-6 space-y-4">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className="block text-gray-700"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.label}
+            </Link>
+          ))}
+
+          <a
+            href="https://wa.me/917901324545"
+            target="_blank"
+            className="block bg-[#1a3a52] text-white text-center py-3 rounded"
+          >
+            WhatsApp Enquiry
+          </a>
         </div>
       )}
     </header>

@@ -1,17 +1,7 @@
-"use client";
-
-import { useParams } from "next/navigation";
 import ProjectForm from "@/components/admin/ProjectForm";
 
-export default function EditProjectPage() {
-  const params = useParams();
-
-  const projectId =
-    typeof params.id === "string"
-      ? params.id
-      : Array.isArray(params.id)
-      ? params.id[0]
-      : "";
+export default function EditProjectPage({ params }: { params: { id: string } }) {
+  const projectId = params.id;
 
   if (!projectId) {
     return <div className="p-6">Invalid project ID</div>;

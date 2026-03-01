@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { EKAM_BUSINESS, getOfficeAddressText } from "@/lib/business";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,8 +18,20 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "Ekam Properties",
-  description: "A modern Next.js application",
+  description: "Discover premium residential projects with Ekam Properties.",
+  openGraph: {
+    title: "Ekam Properties",
+    description: "Discover premium residential projects with Ekam Properties.",
+    type: "website",
+    siteName: "Ekam Properties",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ekam Properties",
+    description: "Discover premium residential projects with Ekam Properties.",
+  },
 };
 
 export default function RootLayout({
@@ -25,12 +39,32 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const realEstateAgentSchema = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    name: EKAM_BUSINESS.name,
+    telephone: EKAM_BUSINESS.phoneDisplay,
+    email: EKAM_BUSINESS.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: getOfficeAddressText(),
+      addressLocality: "Hyderabad",
+      addressRegion: "Telangana",
+      postalCode: "500032",
+      addressCountry: "IN",
+    },
+  };
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
-        {/* global header/navbar */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(realEstateAgentSchema) }}
+        />
+        <GoogleAnalytics />
         <Header />
         {children}
       </body>

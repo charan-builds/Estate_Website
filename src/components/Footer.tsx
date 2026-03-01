@@ -1,26 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { EKAM_BUSINESS, getOfficeAddressText } from "@/lib/business";
 
 export default function Footer() {
   return (
     <footer className="bg-[#1a3a52] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* Company Info */}
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-serif mb-4">Ekam Properties</h3>
-            <p className="text-gray-300 mb-6 leading-relaxed">
-              Building dreams, creating landmarks. A trusted name in real estate
-              development with a commitment to quality, innovation, and customer
-              satisfaction.
+            <h3 className="mb-4 text-2xl font-serif">{EKAM_BUSINESS.name}</h3>
+            <p className="mb-6 leading-relaxed text-gray-300">
+              Building dreams, creating landmarks with verified projects and transparent guidance.
             </p>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
+              <ShieldCheck size={16} /> {EKAM_BUSINESS.reraBadge}
+            </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h4 className="text-sm uppercase tracking-wider mb-4">Quick Links</h4>
+            <h4 className="mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
             <ul className="space-y-3">
               <li><Link href="/">Home</Link></li>
               <li><Link href="/about">About Us</Link></li>
@@ -29,23 +29,28 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact Info */}
           <div>
-            <h4 className="text-sm uppercase tracking-wider mb-4">Contact</h4>
+            <h4 className="mb-4 text-sm uppercase tracking-wider">Contact</h4>
             <ul className="space-y-3">
-              <li className="flex gap-3"><Phone size={18} /> +91 40 1234 5678</li>
-              <li className="flex gap-3"><Mail size={18} /> info@ekamproperties.com</li>
-              <li className="flex gap-3"><MapPin size={18} /> Hyderabad, India</li>
+              <li className="flex gap-3"><Phone size={18} /> {EKAM_BUSINESS.phoneDisplay}</li>
+              <li className="flex gap-3"><Mail size={18} /> {EKAM_BUSINESS.email}</li>
+              <li className="flex gap-3"><MapPin size={18} /> {getOfficeAddressText()}</li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-700 text-sm text-gray-400 flex justify-between">
-          <span>© 2026 Ekam Properties. All rights reserved.</span>
-          <span className="flex gap-6">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms & Conditions</a>
-          </span>
+        <div className="mt-12 border-t border-gray-700 pt-8 text-sm text-gray-300">
+          <p className="mb-4">{EKAM_BUSINESS.reraDisclaimer}</p>
+          <div className="flex flex-col gap-3 text-gray-400 md:flex-row md:items-center md:justify-between">
+            <span>© 2026 {EKAM_BUSINESS.name}. All rights reserved.</span>
+            <span className="flex items-center gap-6">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms & Conditions</a>
+              <Link href="/admin/login" className="text-[11px] text-gray-500 transition hover:text-gray-300">
+                Developer Access
+              </Link>
+            </span>
+          </div>
         </div>
       </div>
     </footer>

@@ -1,5 +1,5 @@
 "use client";
-import { CheckCircle2, Award, Target, Eye, TrendingUp, Users, Building2, Shield } from "lucide-react";
+import { CheckCircle2, Award, Target, Eye } from "lucide-react";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 
  
@@ -69,7 +69,7 @@ export default function About() {
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
                   Established in 2000, Ekam Properties has grown from a small
-                  construction firm to one of India's most trusted real estate
+                  construction firm to one of India&apos;s most trusted real estate
                   developers. Our journey has been defined by an unwavering
                   commitment to quality, innovation, and customer satisfaction.
                 </p>
@@ -218,7 +218,7 @@ export default function About() {
 
           <div className="max-w-4xl mx-auto">
             <div className="bg-gray-50 p-8 md:p-12">
-              <div className="text-5xl text-[#1a3a52] mb-4">"</div>
+              <div className="text-5xl text-[#1a3a52] mb-4">&quot;</div>
               <p className="text-lg text-gray-700 leading-relaxed mb-6 italic">
                 At Ekam Properties, we believe that a home is not just a
                 structure but a foundation for dreams, aspirations, and
@@ -231,7 +231,7 @@ export default function About() {
                 customer satisfaction in every project we undertake.
               </p>
               <div className="pt-4 border-t border-gray-300">
-                <p className="text-[#1a3a52]">Rajesh Kumar</p>
+                <p className="text-[#1a3a52]">Sunil Chandra</p>
                 <p className="text-gray-600 text-sm">Managing Director, Ekam Properties</p>
               </div>
             </div>
