@@ -1,15 +1,25 @@
-import React from 'react';
+"use client";
 
-interface Props {
-  params: { id: string };
-}
+import { useParams } from "next/navigation";
+import ProjectForm from "@/components/admin/ProjectForm";
 
-export default function EditProjectPage({ params }: Props) {
+export default function EditProjectPage() {
+  const params = useParams();
+
+  const projectId =
+    typeof params.id === "string"
+      ? params.id
+      : Array.isArray(params.id)
+      ? params.id[0]
+      : "";
+
+  if (!projectId) {
+    return <div className="p-6">Invalid project ID</div>;
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">Edit Project {params.id}</h1>
-      {/* placeholder for edit form, prefilled with project data */}
-      <p>Form to edit project with ID {params.id} goes here.</p>
+    <div className="p-6">
+      <ProjectForm projectId={projectId} />
     </div>
   );
 }
