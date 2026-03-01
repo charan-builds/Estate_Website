@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { isAdminUser, subscribeToAdminAuth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { isAdminUser } from "@/lib/auth";
 
 export default function AdminGuard({
   children,
@@ -10,40 +12,39 @@ export default function AdminGuard({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-
-  const [authChecked, setAuthChecked] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = subscribeToAdminAuth(async (user) => {
-      const authorized = await isAdminUser(user);
-      setIsAuthorized(authorized);
-      setAuthChecked(true);
+    if (!auth) {
+      router.replace("/admin/login");
+      return;
+    }
 
-      if (!authorized && pathname !== "/admin/login") {
+    const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
+      if (!user) {
         router.replace("/admin/login");
+        return;
       }
 
-      if (authorized && pathname === "/admin/login") {
-        router.replace("/admin");
+      const isAdmin = await isAdminUser(user);
+
+      if (!isAdmin) {
+        router.replace("/admin/login");
+        return;
       }
+
+      setChecking(false);
     });
 
     return () => unsubscribe();
-  }, [pathname, router]);
+  }, [router]);
 
-  // ⏳ Prevent flicker / unauthorized flash
-  if (!authChecked) {
+  if (checking) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-gray-500">Checking admin access...</p>
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Checking admin access…
       </div>
     );
-  }
-
-  if (!isAuthorized && pathname !== "/admin/login") {
-    return null;
   }
 
   return <>{children}</>;

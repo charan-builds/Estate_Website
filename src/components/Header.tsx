@@ -22,8 +22,13 @@ export default function Header() {
   /* 🔐 Hidden Admin Shortcut: Ctrl + Shift + A */
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      setKeysPressed((prev) => [...prev.slice(-2), e.key.toLowerCase()]);
-    }
+  if (!e.key || typeof e.key !== "string") return;
+
+  setKeysPressed((prev) => [
+    ...prev.slice(-2),
+    e.key.toLowerCase(),
+  ]);
+}
 
     if (keysPressed.join("") === "controlshifta") {
       router.push("/admin/login");

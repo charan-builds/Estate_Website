@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { EKAM_BUSINESS, getOfficeAddressText } from "@/lib/business";
 
@@ -18,7 +19,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
   title: "Ekam Properties",
   description: "Discover premium residential projects with Ekam Properties.",
   openGraph: {
@@ -58,15 +61,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
+        {/* Structured Data */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(realEstateAgentSchema) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(realEstateAgentSchema),
+          }}
         />
+
         <GoogleAnalytics />
+
+        {/* Header */}
         <Header />
-        {children}
+
+        {/* Page Content */}
+        <main className="flex-1">{children}</main>
+
+        {/* Footer */}
+        <Footer />
       </body>
     </html>
   );
