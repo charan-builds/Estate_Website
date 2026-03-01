@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { isAdminUser } from "@/lib/auth";
 
 export default function AdminGuard({
   children,
@@ -12,7 +11,6 @@ export default function AdminGuard({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     if (!auth) {
@@ -20,32 +18,14 @@ export default function AdminGuard({
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         router.replace("/admin/login");
-        return;
       }
-
-      const isAdmin = await isAdminUser(user);
-
-      if (!isAdmin) {
-        router.replace("/admin/login");
-        return;
-      }
-
-      setChecking(false);
     });
 
     return () => unsubscribe();
   }, [router]);
-
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Checking admin access…
-      </div>
-    );
-  }
 
   return <>{children}</>;
 }

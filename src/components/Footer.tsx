@@ -46,7 +46,7 @@ export default function Footer() {
             <span className="flex items-center gap-6">
               <a href="#">Privacy Policy</a>
               <a href="#">Terms & Conditions</a>
-              <Link href="/admin/login" className="text-[11px] text-gray-500 transition hover:text-gray-300">
+              <Link href="/admin" className="text-[11px] text-gray-500 transition hover:text-gray-300">
                 Developer Access
               </Link>
             </span>

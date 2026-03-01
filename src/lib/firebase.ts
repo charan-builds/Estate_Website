@@ -1,4 +1,3 @@
-// src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -13,12 +12,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-// ✅ Prevent multiple initializations
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// ✅ Auth only on client
-export const auth =
-  typeof window === "undefined" ? null : getAuth(app);
+// 🔴 IMPORTANT: ALWAYS CREATE AUTH (no null)
+export const auth = getAuth(app);
