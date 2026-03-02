@@ -73,7 +73,7 @@ export default function RootLayout({
 
         <GoogleAnalytics />
 
-        {/* Header */}
+        {/* Header (client component is OK here) */}
         <Header />
 
         {/* Page Content */}
