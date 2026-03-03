@@ -384,25 +384,6 @@ function handleBrochureClick() {
 
 /* ---------- UI Helpers ---------- */
 
-function Info({
-  label,
-  value,
-  emphasize,
-}: {
-  label: string;
-  value: string;
-  emphasize?: boolean;
-}) {
-  return (
-    <div>
-      <p className="text-xs uppercase text-blue-200">{label}</p>
-      <p className={emphasize ? "text-xl font-bold" : "font-semibold"}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
 function Section({
   title,
   children,
@@ -458,4 +439,4 @@ function InfoBlock({
       </p>
     </div>
   );
-}8
+}
