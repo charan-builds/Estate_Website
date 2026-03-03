@@ -62,7 +62,7 @@ export default function Header() {
                 Ekam Properties
               </span>
               <span className="text-xs text-gray-500">
-                TG RERA Certified Real Estate Agent
+                TG RERA Certified Real Estate 
               </span>
             </div>
           </Link>

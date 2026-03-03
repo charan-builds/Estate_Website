@@ -93,7 +93,7 @@ export default function ProjectsPage() {
           </h1>
           <p className="max-w-2xl text-lg text-gray-400">
             Verified residential projects across Hyderabad by a TG RERA
-            certified real estate agent.
+            certified real estate.
           </p>
         </div>
       </section>
@@ -111,7 +111,7 @@ export default function ProjectsPage() {
     e.target.value as (typeof PROJECT_STATUS_FILTERS)[number]["value"]
   )
 }
-              className="rounded-md border px-3 py-2 text-sm"
+              className="rounded-md border px-3 py-2 text-sm text-[#1a3a52]"
             >
               {PROJECT_STATUS_FILTERS.map((f) => (
                 <option key={f.value} value={f.value}>
@@ -123,7 +123,7 @@ export default function ProjectsPage() {
             <select
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
-              className="rounded-md border px-3 py-2 text-sm"
+              className="rounded-md border px-3 py-2 text-sm text-[#1a3a52]"
             >
               {locations.map((loc) => (
                 <option key={loc} value={loc}>
@@ -136,7 +136,7 @@ export default function ProjectsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search project"
-              className="w-full max-w-xs rounded-md border px-3 py-2 text-sm"
+              className="w-full max-w-xs rounded-md border px-3 py-2 text-sm text-[#1a3a52]"
             />
           </div>
         </div>
@@ -198,9 +198,9 @@ export default function ProjectsPage() {
 
                        <a
   href={`tel:${EKAM_BUSINESS.phoneDial}`}
-  className="flex items-center justify-center gap-2 rounded-md border py-2 text-sm font-medium"
+  className="flex items-center justify-center gap-2 rounded-md border  py-2 text-sm font-medium"
 >
-  Call Now
+  <span className="text-[#1a3a52] font-bold"> Call Now</span>
 </a>
                       </div>
                     </div>
