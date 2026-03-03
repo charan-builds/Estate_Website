@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { Filter, Home, MapPin, Phone } from "lucide-react";
+import { Filter, Home, MapPin} from "lucide-react";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { db } from "@/lib/firebase";
 import { PROJECT_STATUS_FILTERS } from "@/lib/constants";
@@ -91,7 +91,7 @@ export default function ProjectsPage() {
           <h1 className="mb-4 text-4xl font-serif text-white md:text-5xl">
             Our Projects
           </h1>
-          <p className="max-w-2xl text-lg text-gray-200">
+          <p className="max-w-2xl text-lg text-gray-400">
             Verified residential projects across Hyderabad by a TG RERA
             certified real estate agent.
           </p>
@@ -106,7 +106,11 @@ export default function ProjectsPage() {
 
             <select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value as any)}
+              onChange={(e) =>
+  setSelectedStatus(
+    e.target.value as (typeof PROJECT_STATUS_FILTERS)[number]["value"]
+  )
+}
               className="rounded-md border px-3 py-2 text-sm"
             >
               {PROJECT_STATUS_FILTERS.map((f) => (
@@ -167,7 +171,7 @@ export default function ProjectsPage() {
                           {project.status}
                         </span>
                         <span className="text-lg font-semibold text-[#1a3a52]">
-                          {project.price}
+                          ₹ {project.price}
                         </span>
                       </div>
 
