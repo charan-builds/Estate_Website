@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+ 
 import {
   ArrowLeft,
   CheckCircle2,
@@ -11,7 +11,7 @@ import {
   MessageCircle,
   CalendarCheck,
   ShieldCheck,
-  PlayCircle,
+   
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
@@ -92,8 +92,7 @@ export default function ProjectDetailsClient({ project }: Props) {
 
   /* ---------------- VIDEO SUPPORT ---------------- */
 
-  const videoUrl =
-    project.gallery?.find((item) => item.includes("youtube") || item.includes("mp4")) || null;
+   
 
   return (
     <div className="bg-slate-50 pb-24 lg:pb-0">
