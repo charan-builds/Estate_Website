@@ -36,7 +36,7 @@ export default function AdminHeader() {
         {/* Right: Actions */}
         <button
           onClick={handleLogout}
-          className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
+          className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm bg-blue text-slate-700 hover:bg-slate-100 transition"
         >
           <LogOut size={16} />
           Logout

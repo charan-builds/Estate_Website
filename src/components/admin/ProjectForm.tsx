@@ -23,6 +23,7 @@ type FormState = {
   name: string;
   slug: string;
   location: string;
+  propertyType: Project["propertyType"];
   status: Project["status"];
   configuration: string;
   price: string;
@@ -30,12 +31,18 @@ type FormState = {
   rera: string;
   latitude: string;
   longitude: string;
+
+  video: string;       // ⭐ add
+  videoType: "youtube" | "upload" | ""; // ⭐ add
 };
 
 const INITIAL_FORM: FormState = {
   name: "",
   slug: "",
   location: "",
+
+  propertyType: "Open Plots",  // ⭐ ADD
+
   status: "Ready to Move",
   configuration: "",
   price: "",
@@ -43,8 +50,10 @@ const INITIAL_FORM: FormState = {
   rera: "",
   latitude: "",
   longitude: "",
-};
 
+  video: "",       // ⭐ add
+  videoType: "",   // ⭐ add
+};
 function generateSlug(value: string) {
   return value
     .toLowerCase()
@@ -104,6 +113,8 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
         name: data.name ?? "",
         slug: data.slug ?? "",
         location: data.location ?? "",
+        propertyType: data.propertyType ?? "Open Plots",   // ⭐ ADD THIS
+
         status: data.status ?? "Ready to Move",
         configuration: data.configuration ?? "",
         price: data.price ?? "",
@@ -121,6 +132,8 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
             : data.longitude !== undefined && data.longitude !== null
             ? String(data.longitude)
             : "",
+            video: data.video ?? "",
+            videoType: data.videoType ?? "",
       });
 
       setAmenities(Array.isArray(data.amenities) ? data.amenities : []);
@@ -270,6 +283,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       name: form.name.trim(),
       slug: normalizedSlug,
       location: form.location.trim(),
+      propertyType: form.propertyType,
       status: form.status,
       configuration: form.configuration.trim(),
       price: form.price.trim(),
@@ -277,12 +291,15 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       amenities,
       specifications,
       gallery,
+      video: form.video.trim() || null,
+      videoType: form.videoType || null,
       rera: form.rera.trim() || null,
       coordinates:
         latitude !== null && longitude !== null
           ? { lat: latitude, lng: longitude }
           : null,
       updatedAt: serverTimestamp(),
+      
     };
 
     try {
@@ -315,6 +332,8 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
     name: form.name,
     slug: form.slug,
     location: form.location,
+    propertyType: form.propertyType,   // ⭐ ADD THIS
+
     status: form.status,
     configuration: form.configuration,
     price: form.price,
@@ -402,6 +421,26 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 required
               />
             </Field>
+             <Field label="Property Type" required>
+<select
+  value={form.propertyType}
+  onChange={(e) =>
+    updateFormField(
+      "propertyType",
+      e.target.value as Project["propertyType"]
+    )
+  }
+  className={INPUT_CLASS}
+  required
+>
+  <option value="Open Plots">Open Plots</option>
+  <option value="Villas">Villas</option>
+  <option value="Apartments">Apartments</option>
+  <option value="Farm Plots">Farm Plots</option>
+  <option value="Highway Plots">Highway Plots</option>
+</select>
+</Field>
+
 
             <Field label="Price" required>
               <input
@@ -432,6 +471,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
               required
             />
           </Field>
+
         </Section>
 
         <Section title="Location Map Coordinates">
@@ -453,7 +493,9 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 placeholder="78.4867"
               />
             </Field>
+           
           </div>
+
 
           <div className="flex flex-wrap items-center gap-3">
             <a
@@ -577,12 +619,41 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
             ))}
           </div>
         </Section>
+        <Section title="Project Video">
+
+  <Field label="Video URL">
+    <input
+      value={form.video}
+      onChange={(e) => updateFormField("video", e.target.value)}
+      className={INPUT_CLASS}
+      placeholder="YouTube embed URL or video link"
+    />
+  </Field>
+
+  <Field label="Video Type">
+    <select
+      value={form.videoType}
+      onChange={(e) =>
+        updateFormField(
+          "videoType",
+          e.target.value as "youtube" | "upload" | ""
+        )
+      }
+      className={INPUT_CLASS}
+    >
+      <option value="">Select Type</option>
+      <option value="youtube">YouTube</option>
+      <option value="upload">Uploaded Video</option>
+    </select>
+  </Field>
+
+</Section>
 
         <button type="submit" disabled={!canSubmit} className={PRIMARY_BUTTON_CLASS}>
           {uploading ? "Uploading images..." : loading ? "Saving..." : isEdit ? "Update Project" : "Create Project"}
         </button>
       </form>
-
+    
       {previewImage ? (
         <div
           role="dialog"
@@ -608,6 +679,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
           </div>
         </div>
       ) : null}
+      
     </>
   );
 }

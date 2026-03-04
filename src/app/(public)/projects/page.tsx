@@ -97,6 +97,55 @@ export default function ProjectsPage() {
           </p>
         </div>
       </section>
+      {/* PROPERTY CATEGORIES */}
+<section className="py-12 bg-slate-50">
+  <div className="mx-auto max-w-7xl px-4">
+
+    <h2 className="mb-8 text-3xl font-serif text-[#1a3a52]">
+      Browse by Property Type
+    </h2>
+
+    <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
+
+      <Link
+        href="/projects/open-plots"
+        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
+      >
+        <p className="text-lg font-semibold text-[#1a3a52]">Open Plots</p>
+      </Link>
+
+      <Link
+        href="/projects/villas"
+        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
+      >
+        <p className="text-lg font-semibold text-[#1a3a52]">Villas</p>
+      </Link>
+
+      <Link
+        href="/projects/apartments"
+        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
+      >
+        <p className="text-lg font-semibold text-[#1a3a52]">Apartments</p>
+      </Link>
+
+      <Link
+        href="/projects/farm-plots"
+        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
+      >
+        <p className="text-lg font-semibold text-[#1a3a52]">Farm Plots</p>
+      </Link>
+
+      <Link
+        href="/projects/highway-plots"
+        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
+      >
+        <p className="text-lg font-semibold text-[#1a3a52]">Highway Plots</p>
+      </Link>
+
+    </div>
+
+  </div>
+</section>
 
       {/* FILTER BAR */}
       <section className="sticky top-[72px] z-10 border-b bg-white">

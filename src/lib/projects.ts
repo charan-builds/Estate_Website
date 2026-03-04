@@ -7,20 +7,42 @@ import {
   query,
   where,
 } from "firebase/firestore";
+
 import { db } from "@/lib/firebase";
-import { Project, ProjectCoordinates } from "@/types/project";
+
+import {
+  Project,
+  ProjectCoordinates,
+  ProjectVideoType,
+} from "@/types/project";
 
 /* -------------------------------------------------
-   COORDINATES PARSER (Backward Compatible)
+   RAW DATA TYPE (Firestore flexibility)
 -------------------------------------------------- */
 
 type RawProjectData = Partial<Project> & {
   latitude?: unknown;
   longitude?: unknown;
+  propertyType?: unknown;
 };
+/* -------------------------------------------------
+   HELPERS
+-------------------------------------------------- */
+
+function isString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === "string");
+}
+
+/* -------------------------------------------------
+   COORDINATES PARSER (Backward Compatible)
+-------------------------------------------------- */
 
 function parseCoordinates(data: RawProjectData): ProjectCoordinates | undefined {
-  // ✅ Preferred: new coordinates object
+  // Preferred modern structure
   if (
     data.coordinates &&
     typeof data.coordinates.lat === "number" &&
@@ -29,7 +51,7 @@ function parseCoordinates(data: RawProjectData): ProjectCoordinates | undefined 
     return data.coordinates;
   }
 
-  // 🧱 Legacy support
+  // Legacy fields support
   const lat = typeof data.latitude === "number" ? data.latitude : null;
   const lng = typeof data.longitude === "number" ? data.longitude : null;
 
@@ -41,42 +63,85 @@ function parseCoordinates(data: RawProjectData): ProjectCoordinates | undefined 
 }
 
 /* -------------------------------------------------
-   PROJECT MAPPER
+   VIDEO PARSER
+-------------------------------------------------- */
+
+function parseVideo(data: RawProjectData): {
+  video?: string;
+  videoType?: ProjectVideoType;
+} {
+  if (!isString(data.video)) {
+    return {};
+  }
+
+  if (data.video.includes("youtube")) {
+    return {
+      video: data.video,
+      videoType: "youtube",
+    };
+  }
+
+  return {
+    video: data.video,
+    videoType: "upload",
+  };
+}
+
+/* -------------------------------------------------
+   PROJECT DATA MAPPER
 -------------------------------------------------- */
 
 export function mapProjectData(
   id: string,
   data: RawProjectData
 ): Project | null {
-  if (!data.slug || typeof data.slug !== "string") {
+  if (!isString(data.slug)) {
     return null;
   }
 
-  return {
-    id,
-    name: data.name ?? "",
-    slug: data.slug,
-    location: data.location ?? "",
-    coordinates: parseCoordinates(data),
+  const videoData = parseVideo(data);
 
-    status: data.status ?? "Ready to Move",
-    configuration: data.configuration ?? "",
-    price: data.price ?? "",
-    description: data.description ?? "",
+ return {
+  id,
 
-    amenities: Array.isArray(data.amenities) ? data.amenities : [],
-    specifications: Array.isArray(data.specifications)
-      ? data.specifications
-      : [],
-    gallery: Array.isArray(data.gallery) ? data.gallery : [],
+  name: isString(data.name) ? data.name : "",
+  slug: data.slug,
+  location: isString(data.location) ? data.location : "",
 
-    landArea: typeof data.landArea === "string" ? data.landArea : null,
-    rera: data.rera ?? null,
+  propertyType: isString(data.propertyType)
+    ? data.propertyType
+    : "Open Plots",
 
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-  };
+  coordinates: parseCoordinates(data),
+
+  status: data.status ?? "Ready to Move",
+  configuration: isString(data.configuration) ? data.configuration : "",
+
+  price: isString(data.price) ? data.price : "",
+  description: isString(data.description) ? data.description : "",
+
+  amenities: isStringArray(data.amenities) ? data.amenities : [],
+
+  specifications: Array.isArray(data.specifications)
+    ? data.specifications
+    : [],
+
+  gallery: isStringArray(data.gallery) ? data.gallery : [],
+
+  landArea: isString(data.landArea) ? data.landArea : null,
+
+  rera: isString(data.rera) ? data.rera : null,
+
+  createdAt: data.createdAt,
+  updatedAt: data.updatedAt,
+
+  ...videoData,
+};
 }
+
+/* -------------------------------------------------
+   SNAPSHOT MAPPER
+-------------------------------------------------- */
 
 export function mapProjectSnapshot(
   snapshot: QueryDocumentSnapshot<DocumentData>
@@ -85,12 +150,13 @@ export function mapProjectSnapshot(
 }
 
 /* -------------------------------------------------
-   GOOGLE MAPS EMBED
+   GOOGLE MAPS EMBED URL
 -------------------------------------------------- */
 
-export function buildProjectMapEmbedUrl(project: Project) {
+export function buildProjectMapEmbedUrl(project: Project): string {
   if (project.coordinates) {
     const { lat, lng } = project.coordinates;
+
     return `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
   }
 
@@ -100,7 +166,7 @@ export function buildProjectMapEmbedUrl(project: Project) {
 }
 
 /* -------------------------------------------------
-   FIRESTORE QUERIES
+   GET PROJECT BY SLUG
 -------------------------------------------------- */
 
 export async function getProjectBySlug(
@@ -114,10 +180,16 @@ export async function getProjectBySlug(
 
   const snapshot = await getDocs(q);
 
-  if (snapshot.empty) return null;
+  if (snapshot.empty) {
+    return null;
+  }
 
   return mapProjectSnapshot(snapshot.docs[0]);
 }
+
+/* -------------------------------------------------
+   GET ALL PROJECT SLUGS (SEO / SSG)
+-------------------------------------------------- */
 
 export async function getAllProjectSlugs(): Promise<string[]> {
   const snapshot = await getDocs(collection(db, "projects"));
@@ -146,9 +218,11 @@ export async function isSlugUnique(
 
   const snapshot = await getDocs(q);
 
-  if (snapshot.empty) return true;
+  if (snapshot.empty) {
+    return true;
+  }
 
-  // Editing same project → allowed
+  // Editing same project allowed
   if (currentProjectId && snapshot.docs[0].id === currentProjectId) {
     return true;
   }

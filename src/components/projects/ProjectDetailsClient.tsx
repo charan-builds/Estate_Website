@@ -11,7 +11,9 @@ import {
   MessageCircle,
   CalendarCheck,
   ShieldCheck,
+  PlayCircle,
 } from "lucide-react";
+
 import { trackEvent } from "@/lib/analytics";
 import { EKAM_BUSINESS } from "@/lib/business";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
@@ -28,41 +30,49 @@ export default function ProjectDetailsClient({ project }: Props) {
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
 
+  /* ---------------- TRACKING ---------------- */
+
+  function handleCallClick() {
+    trackEvent("call_now_click", {
+      project_slug: project.slug,
+      project_name: project.name,
+    });
+  }
+
+  function handleWhatsappClick() {
+    trackEvent("whatsapp_click", {
+      project_slug: project.slug,
+      project_name: project.name,
+    });
+  }
+
+  function handleBrochureClick() {
+    trackEvent("brochure_click", {
+      project_slug: project.slug,
+      project_name: project.name,
+    });
+  }
+
   useEffect(() => {
     trackEvent("project_page_view", {
       project_slug: project.slug,
       project_name: project.name,
     });
   }, [project.slug, project.name]);
-function handleCallClick() {
-  trackEvent("call_now_click", {
-    project_slug: project.slug,
-    project_name: project.name,
-  });
-}
 
-function handleWhatsappClick() {
-  trackEvent("whatsapp_click", {
-    project_slug: project.slug,
-    project_name: project.name,
-  });
-}
+  /* ---------------- WHATSAPP ---------------- */
 
-function handleBrochureClick() {
-  trackEvent("brochure_click", {
-    project_slug: project.slug,
-    project_name: project.name,
-  });
-}
   const whatsappMessage = useMemo(
     () =>
       encodeURIComponent(
-        `Hi Ekam Properties,\nI am interested in ${project.name}.\nPlease share price, floor plans, and site visit details.`
+        `Hi Ekam Properties,\nI am interested in ${project.name}.\nPlease share price details and site visit availability.`
       ),
     [project.name]
   );
 
   const whatsappLink = `https://wa.me/${EKAM_BUSINESS.whatsappNumber}?text=${whatsappMessage}`;
+
+  /* ---------------- SEO SCHEMA ---------------- */
 
   const projectJsonLd = {
     "@context": "https://schema.org",
@@ -79,14 +89,21 @@ function handleBrochureClick() {
     },
   };
 
+  /* ---------------- VIDEO SUPPORT ---------------- */
+
+  const videoUrl =
+    project.gallery?.find((item) => item.includes("youtube") || item.includes("mp4")) || null;
+
   return (
     <div className="bg-slate-50 pb-24 lg:pb-0">
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
       />
 
-      {/* Top Bar */}
+      {/* ---------- TOP NAV ---------- */}
+
       <div className="border-b bg-white/90 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <Link
@@ -98,125 +115,152 @@ function handleBrochureClick() {
         </div>
       </div>
 
-      {/* Hero */}
+      {/* ---------- HERO ---------- */}
+
       <section className="relative h-[460px] overflow-hidden">
+
         <ImageWithFallback
-          src={project.gallery[0]}
+          src={project.gallery?.[0] || "/placeholder.jpg"}
           alt={project.name}
           className="h-full w-full object-cover"
           priority
         />
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+
         <div className="absolute bottom-0 left-1/2 w-full max-w-7xl -translate-x-1/2 px-6 pb-10 text-white">
-          <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase text-[#1a3a52]">
+
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#1a3a52]">
             {project.status}
           </span>
+
           <h1 className="mt-3 text-4xl font-serif md:text-5xl">
             {project.name}
           </h1>
+
           <p className="mt-3 flex items-center gap-2 text-gray-200">
             <MapPin size={18} /> {project.location}
           </p>
+
         </div>
       </section>
 
-      {/* Price + Highlights */}
+      {/* ---------- PRICE INFO ---------- */}
+
       <section className="-mt-14 px-4">
-  <div className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-    
-    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-5">
+        <div className="mx-auto max-w-7xl rounded-2xl border bg-white p-6 shadow-xl">
 
-      {/* CONFIGURATION */}
-      <InfoBlock
-        label="Configuration"
-        value={project.configuration || "-"}
-      />
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-5">
 
-      {/* PRICE – HERO */}
-      <div className="rounded-xl bg-[#1a3a52] p-4 text-white shadow-md">
-        <p className="text-xs uppercase tracking-wide text-blue-100">
-          Starting Price
-        </p>
-        <p className="mt-1 text-2xl font-extrabold">
-          ₹ {project.price || "On Request"}
-        </p>
-        <p className="mt-1 text-xs text-blue-200">
-          * All inclusive
-        </p>
-      </div>
+            <InfoBlock label="Configuration" value={project.configuration || "-"} />
 
-      {/* RERA */}
-      <InfoBlock
-        label="RERA No."
-        value={project.rera || "Available"}
-      />
+            <div className="rounded-xl bg-[#1a3a52] p-4 text-white shadow-md">
+              <p className="text-xs uppercase tracking-wide text-blue-100">
+                Starting Price
+              </p>
+              <p className="mt-1 text-2xl font-bold">
+                ₹ {project.price || "On Request"}
+              </p>
+            </div>
 
-      {/* STATUS */}
-      <InfoBlock
-        label="Status"
-        value={project.status}
-        highlight
-      />
+            <InfoBlock label="RERA No." value={project.rera || "Available"} />
 
-      {/* LAND AREA */}
-      <InfoBlock
-        label="Land Area"
-        value={project.landArea || "—"}
-      />
+            <InfoBlock label="Status" value={project.status} highlight />
 
-    </div>
-  </div>
-</section>
+            <InfoBlock label="Land Area" value={project.landArea || "—"} />
 
-      {/* Content */}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- CONTENT ---------- */}
+
       <section className="py-16">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-3">
+
           <div className="space-y-12 lg:col-span-2">
+
+            {/* OVERVIEW */}
+
             <Section title="Project Overview">
               <Card>
                 <p className="leading-relaxed text-gray-700">
-                  {project.description ||
-                    "Detailed project information will be updated shortly."}
+                  {project.description || "Project details coming soon."}
                 </p>
               </Card>
             </Section>
 
-            <Section title="Lifestyle Amenities">
+            {/* VIDEO */}
+
+            {project.video && (
+  <Section title="Project Video">
+
+    <div className="overflow-hidden rounded-xl border shadow-lg">
+
+      {project.videoType === "youtube" ? (
+        <iframe
+          src={project.video}
+          className="w-full h-[420px]"
+          allowFullScreen
+        />
+      ) : (
+        <video
+          src={project.video}
+          controls
+          className="w-full"
+        />
+      )}
+
+    </div>
+
+  </Section>
+)}
+{project.specifications && project.specifications.length > 0 && (
+  <Section title="Construction & Specifications">
+    <Card>
+      {project.specifications.map((spec, i) => (
+        <div
+          key={`${spec.label}-${i}`}
+          className={`grid grid-cols-2 px-4 py-3 ${
+            i % 2 === 0 ? "bg-slate-50" : "bg-white"
+          }`}
+        >
+          <span className="text-slate-700">{spec.label}</span>
+
+          <span className="font-semibold text-slate-900">
+            {spec.value}
+          </span>
+        </div>
+      ))}
+    </Card>
+  </Section>
+)}
+
+            {/* AMENITIES */}
+
+            <Section title="Amenities">
               <div className="grid gap-3 sm:grid-cols-2">
+
                 {project.amenities.map((amenity, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2 rounded-lg border bg-white p-3 shadow-sm"
+                    className="flex items-center gap-2 text-black rounded-lg border bg-white p-3 shadow-sm"
                   >
                     <CheckCircle2 size={18} className="text-[#1a3a52]" />
-                    <span className="font-medium text-slate-800">
-                      {amenity}
-                    </span>
+                    <span>{amenity}</span>
                   </div>
                 ))}
+
               </div>
             </Section>
+            
 
-            <Section title="Construction & Specifications">
-              <Card className="p-0">
-                {project.specifications.map((spec, i) => (
-                  <div
-                    key={i}
-                    className={`grid grid-cols-2 px-4 py-3 ${
-                      i % 2 === 0 ? "bg-slate-50" : "bg-white"
-                    }`}
-                  >
-                    <span className="text-slate-700">{spec.label}</span>
-                    <span className="font-semibold text-slate-900">
-                      {spec.value}
-                    </span>
-                  </div>
-                ))}
-              </Card>
-            </Section>
+            {/* GALLERY */}
 
-            <Section title={`Project Gallery (${project.gallery.length})`}>
+            <Section title={`Gallery (${project.gallery.length})`}>
+
               <div className="grid gap-4 md:grid-cols-2">
+
                 {project.gallery.map((img, i) => (
                   <button
                     key={i}
@@ -230,129 +274,114 @@ function handleBrochureClick() {
                     />
                   </button>
                 ))}
+
               </div>
+
             </Section>
 
             <MapSection project={project} />
+
           </div>
 
-          {/* Sidebar */}
-          {/* RIGHT SIDEBAR – PREMIUM CTA */}
-<div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-    {/* Trust Header */}
-    <div className="mb-4 flex items-center gap-2 rounded-lg bg-slate-50 p-3">
-      <ShieldCheck className="text-[#1a3a52]" size={20} />
-      <div>
-        <p className="text-sm font-semibold text-[#1a3a52]">
-          Verified by Ekam Properties
-        </p>
-        <p className="text-xs text-slate-600">
-          TG-RERA Certified Real Estate Advisor
-        </p>
-      </div>
-    </div>
+          {/* ---------- SIDEBAR ---------- */}
 
-    <h2 className="mb-2 text-xl font-serif text-[#1a3a52]">
-      Talk to a Property Expert
-    </h2>
-    <p className="mb-5 text-sm text-slate-600">
-      Get price details, floor plans & site visit assistance.
-    </p>
+          <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
 
-    {/* CTA BUTTONS */}
-    <div className="space-y-3">
-      {/* CALL NOW – PRIMARY */}
-      <a
-        href={`tel:${EKAM_BUSINESS.phoneDial}`}
-        onClick={handleCallClick}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1a3a52] px-4 py-3 text-base font-semibold text-white transition hover:bg-[#224865]"
-      >
-        <Phone size={18} />
-        Call Now
-      </a>
+            <div className="rounded-2xl border bg-white p-6 shadow-xl">
 
-      {/* WHATSAPP – SECONDARY */}
-      <a
-        href={whatsappLink}
-        target="_blank"
-        rel="noreferrer"
-        onClick={handleWhatsappClick}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#25D366] bg-[#25D366]/10 px-4 py-3 text-base font-semibold text-[#1f8f4e] transition hover:bg-[#25D366]/20"
-      >
-        <MessageCircle size={18} />
-        WhatsApp Enquiry
-      </a>
+              <div className="mb-4 flex items-center gap-2 rounded-lg bg-slate-50 p-3">
+                <ShieldCheck size={20} className="text-[#1a3a52]" />
+                <div>
+                  <p className="text-sm font-semibold text-[#1a3a52]">
+                    Verified by Ekam Properties
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    TG-RERA Certified Advisor
+                  </p>
+                </div>
+              </div>
 
-      {/* SITE VISIT – CONVERSION */}
-      <button
-        type="button"
-        onClick={() => setIsLeadModalOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#123147] px-4 py-3 text-base font-semibold text-white transition hover:bg-[#0e2a3d]"
-      >
-        <CalendarCheck size={18} />
-        Book Site Visit
-      </button>
+              <h2 className="mb-2 text-xl font-serif text-[#1a3a52]">
+                Talk to a Property Expert
+              </h2>
 
-      {/* BROCHURE – TERTIARY */}
-      <button
-        type="button"
-        onClick={handleBrochureClick}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-      >
-        <Download size={16} />
-        Download Brochure
-      </button>
-    </div>
+              <div className="space-y-3">
 
-    {/* Micro Trust Text */}
-    <p className="mt-4 text-center text-xs text-slate-500">
-      No brokerage • Bank approved projects • 100% verified listings
-    </p>
-  </div>
-</div>
+                <a
+                  href={`tel:${EKAM_BUSINESS.phoneDial}`}
+                  onClick={handleCallClick}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1a3a52] px-4 py-3 font-semibold text-white hover:bg-[#224865]"
+                >
+                  <Phone size={18} /> Call Now
+                </a>
+
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={handleWhatsappClick}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-semibold text-white"
+                >
+                  <MessageCircle size={18} /> WhatsApp
+                </a>
+
+                <button
+                  onClick={() => setIsLeadModalOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#123147] px-4 py-3 font-semibold text-white"
+                >
+                  <CalendarCheck size={18} /> Book Site Visit
+                </button>
+
+                <button
+                  onClick={handleBrochureClick}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border text-[#123147] px-4 py-3 text-sm"
+                >
+                  <Download size={16} /> Download Brochure
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
         </div>
       </section>
 
-      {/* Mobile CTA */}
-      
-      <div className="fixed inset-x-0 bottom-0 z-40 bg-white px-3 py-2 shadow-[0_-6px_20px_rgba(0,0,0,0.18)] lg:hidden">
-  <div className="grid grid-cols-3 gap-3">
-    
-    {/* CALL */}
-    <a
-      href={`tel:${EKAM_BUSINESS.phoneDial}`}
-      onClick={handleCallClick}
-      className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[#1a3a52] py-3 text-white font-semibold"
-    >
-      <Phone size={18} />
-      <span className="text-xs">Call</span>
-    </a>
+      {/* ---------- MOBILE CTA ---------- */}
 
-    {/* WHATSAPP */}
-    <a
-      href={whatsappLink}
-      target="_blank"
-      rel="noreferrer"
-      onClick={handleWhatsappClick}
-      className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[#25D366] py-3 text-white font-semibold"
-    >
-      <MessageCircle size={18} />
-      <span className="text-xs">WhatsApp</span>
-    </a>
+      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 bg-white p-2 shadow-lg lg:hidden">
 
-    {/* SITE VISIT */}
-    <button
-      type="button"
-      onClick={() => setIsLeadModalOpen(true)}
-      className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[#123147] py-3 text-white font-semibold"
-    >
-      <CalendarCheck size={18} />
-      <span className="text-xs">Visit</span>
-    </button>
+        <a
+          href={`tel:${EKAM_BUSINESS.phoneDial}`}
+          onClick={handleCallClick}
+          className="flex flex-col items-center justify-center gap-1 rounded-lg bg-[#1a3a52] py-3 text-white"
+        >
+          <Phone size={18} />
+          <span className="text-xs">Call</span>
+        </a>
 
-  </div>
-</div>
+        <a
+          href={whatsappLink}
+          onClick={handleWhatsappClick}
+          target="_blank"
+          rel="noreferrer"
+          className="flex flex-col items-center justify-center gap-1 rounded-lg bg-[#25D366] py-3 text-white"
+        >
+          <MessageCircle size={18} />
+          <span className="text-xs">WhatsApp</span>
+        </a>
+
+        <button
+          onClick={() => setIsLeadModalOpen(true)}
+          className="flex flex-col items-center justify-center gap-1 rounded-lg bg-[#123147] py-3 text-white"
+        >
+          <CalendarCheck size={18} />
+          <span className="text-xs">Visit</span>
+        </button>
+
+      </div>
+
+      {/* ---------- MODALS ---------- */}
 
       <LeadForm
         project={project}
@@ -366,14 +395,18 @@ function handleBrochureClick() {
           index={activeImageIndex}
           onClose={() => setActiveImageIndex(null)}
           onPrev={() =>
-            setActiveImageIndex(
-              (activeImageIndex - 1 + project.gallery.length) %
-                project.gallery.length
+            setActiveImageIndex((prev) =>
+              prev === null
+                ? 0
+                : (prev - 1 + project.gallery.length) %
+                  project.gallery.length
             )
           }
           onNext={() =>
-            setActiveImageIndex(
-              (activeImageIndex + 1) % project.gallery.length
+            setActiveImageIndex((prev) =>
+              prev === null
+                ? 0
+                : (prev + 1) % project.gallery.length
             )
           }
         />
@@ -382,7 +415,7 @@ function handleBrochureClick() {
   );
 }
 
-/* ---------- UI Helpers ---------- */
+/* ---------- COMPONENTS ---------- */
 
 function Section({
   title,
@@ -401,19 +434,16 @@ function Section({
 
 function Card({
   children,
-  className,
 }: {
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <div
-      className={`rounded-xl border bg-white shadow-sm ${className || ""}`}
-    >
+    <div className="rounded-xl border bg-white p-6 shadow-sm">
       {children}
     </div>
   );
 }
+
 function InfoBlock({
   label,
   value,
@@ -426,17 +456,11 @@ function InfoBlock({
   return (
     <div
       className={`rounded-xl p-4 ${
-        highlight
-          ? "bg-emerald-50 text-emerald-800"
-          : "bg-slate-50 text-slate-800"
+        highlight ? "bg-emerald-50 text-emerald-800" : "bg-slate-50"
       }`}
     >
-      <p className="text-xs uppercase tracking-wide text-slate-500">
-        {label}
-      </p>
-      <p className="mt-1 text-lg font-semibold">
-        {value}
-      </p>
+      <p className="text-xs uppercase text-slate-500">{label}</p>
+      <p className="mt-1 text-lg font-semibold">{value}</p>
     </div>
   );
 }
