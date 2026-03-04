@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   PlayCircle,
 } from "lucide-react";
-
+import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 import { EKAM_BUSINESS } from "@/lib/business";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
@@ -71,6 +71,7 @@ export default function ProjectDetailsClient({ project }: Props) {
   );
 
   const whatsappLink = `https://wa.me/${EKAM_BUSINESS.whatsappNumber}?text=${whatsappMessage}`;
+  const router = useRouter();
 
   /* ---------------- SEO SCHEMA ---------------- */
 
@@ -105,15 +106,17 @@ export default function ProjectDetailsClient({ project }: Props) {
       {/* ---------- TOP NAV ---------- */}
 
       <div className="border-b bg-white/90 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-[#1a3a52]"
-          >
-            <ArrowLeft size={18} /> Back to Projects
-          </Link>
-        </div>
-      </div>
+  <div className="mx-auto max-w-7xl px-4 py-4">
+
+    <button
+      onClick={() => router.back()}
+      className="inline-flex items-center gap-2 text-gray-600 hover:text-[#1a3a52]"
+    >
+      <ArrowLeft size={18} /> Back
+    </button>
+
+  </div>
+</div>
 
       {/* ---------- HERO ---------- */}
 

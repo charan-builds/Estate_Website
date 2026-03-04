@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { Filter, Home, MapPin} from "lucide-react";
-import { ImageWithFallback } from "@/components/ImageWithFallback";
+import { Filter, MapPin } from "lucide-react";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+
 import { db } from "@/lib/firebase";
 import { PROJECT_STATUS_FILTERS } from "@/lib/constants";
 import { mapProjectSnapshot } from "@/lib/projects";
 import { Project } from "@/types/project";
-import { EKAM_BUSINESS } from "@/lib/business";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 /* ---------------- SMALL HOOK ---------------- */
 
@@ -24,19 +26,57 @@ function useDebouncedValue<T>(value: T, delay = 300) {
   return debounced;
 }
 
+/* ---------------- PROPERTY TYPES ---------------- */
+
+const PROPERTY_TYPES = [
+  {
+    name: "Open Plots",
+    slug: "open-plots",
+    image: "/property-types/open-plots.jpeg",
+    description: "Residential plots ideal for building your dream home.",
+  },
+  {
+    name: "Villas",
+    slug: "villas",
+    image: "/property-types/villas.jpeg",
+    description: "Luxury gated community villas with modern amenities.",
+  },
+  {
+    name: "Apartments",
+    slug: "apartments",
+    image: "/property-types/apartments.jpeg",
+    description: "2, 3 & 4 BHK apartments in prime city locations.",
+  },
+  {
+    name: "Farm Plots",
+    slug: "farm-plots",
+    image: "/property-types/farm-plots.jpeg",
+    description: "Peaceful farmland plots for weekend homes.",
+  },
+  {
+    name: "Highway Plots",
+    slug: "highway-plots",
+    image: "/property-types/highway-plots.jpeg",
+    description: "Highway facing plots with strong investment potential.",
+  },
+];
+
 /* ---------------- PAGE ---------------- */
 
 export default function ProjectsPage() {
+  const params = useParams();
+const type = params?.type as string | undefined;
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedStatus, setSelectedStatus] =
     useState<(typeof PROJECT_STATUS_FILTERS)[number]["value"]>("all");
+
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   const debouncedSearch = useDebouncedValue(searchQuery);
 
-  /* ---------------- DATA ---------------- */
+/* ---------------- FETCH DATA ---------------- */
 
   useEffect(() => {
     const q = query(collection(db, "projects"), orderBy("createdAt", "desc"));
@@ -53,7 +93,7 @@ export default function ProjectsPage() {
     return unsubscribe;
   }, []);
 
-  /* ---------------- FILTER OPTIONS ---------------- */
+/* ---------------- LOCATIONS ---------------- */
 
   const locations = useMemo(() => {
     const unique = new Set(
@@ -61,211 +101,242 @@ export default function ProjectsPage() {
         .map((p) => p.location.trim())
         .filter((loc) => loc.length > 0)
     );
+
     return ["all", ...Array.from(unique).sort()];
   }, [projects]);
 
+/* ---------------- FILTER PROJECTS ---------------- */
+
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
-      const statusMatch =
-        selectedStatus === "all" || project.status === selectedStatus;
+  return projects.filter((project) => {
+    const typeMatch =
+      !type ||
+      project.propertyType?.toLowerCase().replace(/\s/g, "-") === type;
 
-      const locationMatch =
-        selectedLocation === "all" ||
-        project.location === selectedLocation;
+    const statusMatch =
+      selectedStatus === "all" || project.status === selectedStatus;
 
-      const searchMatch =
-        debouncedSearch.length === 0 ||
-        project.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const locationMatch =
+      selectedLocation === "all" || project.location === selectedLocation;
 
-      return statusMatch && locationMatch && searchMatch;
-    });
-  }, [projects, selectedStatus, selectedLocation, debouncedSearch]);
+    const searchMatch =
+      debouncedSearch.length === 0 ||
+      project.name.toLowerCase().includes(debouncedSearch.toLowerCase());
 
-  /* ---------------- UI ---------------- */
+    return typeMatch && statusMatch && locationMatch && searchMatch;
+  });
+}, [projects, selectedStatus, selectedLocation, debouncedSearch, type]);
+/* ---------------- UI ---------------- */
 
   return (
     <div className="bg-white">
-      {/* HERO */}
-      <section className="bg-[#1a3a52] py-16">
+
+{/* HERO */}
+
+      <section className="bg-[#1a3a52] py-20 text-white">
         <div className="mx-auto max-w-7xl px-4">
-          <h1 className="mb-4 text-4xl font-serif text-white md:text-5xl">
-            Our Projects
+
+          <h1 className="text-4xl font-serif md:text-5xl">
+            Discover Premium Real Estate Projects
           </h1>
-          <p className="max-w-2xl text-lg text-gray-400">
-            Verified residential projects across Hyderabad by a TG RERA
-            certified real estate.
+
+          <p className="mt-4 max-w-2xl text-gray-300">
+            Explore verified plots, villas and apartments curated by Ekam
+            Properties across Hyderabad.
           </p>
+
         </div>
       </section>
-      {/* PROPERTY CATEGORIES */}
-<section className="py-12 bg-slate-50">
-  <div className="mx-auto max-w-7xl px-4">
 
-    <h2 className="mb-8 text-3xl font-serif text-[#1a3a52]">
-      Browse by Property Type
-    </h2>
+{/* FILTER BAR */}
 
-    <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
+<section className="sticky top-[72px] z-20 border-b bg-white py-4 shadow-sm">
 
-      <Link
-        href="/projects/open-plots"
-        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
-      >
-        <p className="text-lg font-semibold text-[#1a3a52]">Open Plots</p>
-      </Link>
+<div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 md:flex md:flex-wrap md:items-center md:gap-4">
+<Filter size={18} className="text-black-1000" />
 
-      <Link
-        href="/projects/villas"
-        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
-      >
-        <p className="text-lg font-semibold text-[#1a3a52]">Villas</p>
-      </Link>
+{/* STATUS */}
 
-      <Link
-        href="/projects/apartments"
-        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
-      >
-        <p className="text-lg font-semibold text-[#1a3a52]">Apartments</p>
-      </Link>
+<select
+  value={selectedStatus}
+  onChange={(e) =>
+    setSelectedStatus(
+      e.target.value as (typeof PROJECT_STATUS_FILTERS)[number]["value"]
+    )
+  }
+  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-black-1000 shadow-sm focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]/20"
+>
+{PROJECT_STATUS_FILTERS.map((f) => (
+<option key={f.value} value={f.value}>
+{f.label}
+</option>
+))}
+</select>
 
-      <Link
-        href="/projects/farm-plots"
-        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
-      >
-        <p className="text-lg font-semibold text-[#1a3a52]">Farm Plots</p>
-      </Link>
+{/* LOCATION */}
 
-      <Link
-        href="/projects/highway-plots"
-        className="rounded-xl border bg-white p-6 text-center shadow hover:shadow-lg transition"
-      >
-        <p className="text-lg font-semibold text-[#1a3a52]">Highway Plots</p>
-      </Link>
+<select
+  value={selectedLocation}
+  onChange={(e) => setSelectedLocation(e.target.value)}
+  className="min-w-[220px] rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-[#1a3a52] shadow-sm focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]/20"
+>
+  <option value="all">All Locations</option>
 
-    </div>
+  {locations.map((loc) => (
+    <option key={loc} value={loc}>
+      {loc}
+    </option>
+  ))}
+</select>
 
-  </div>
+{/* SEARCH */}
+<div className="relative">
+  <input
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="Search project"
+    className="min-w-[220px] rounded-lg border border-gray-300 bg-white px-4 py-2 pl-10 text-sm text-gray-800 placeholder:text-gray-400 shadow-sm focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]/20"
+  />
+</div>
+
+</div>
 </section>
 
-      {/* FILTER BAR */}
-      <section className="sticky top-[72px] z-10 border-b bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Filter size={18} className="text-gray-500" />
+{/* PROPERTY TYPES */}
 
-            <select
-              value={selectedStatus}
-              onChange={(e) =>
-  setSelectedStatus(
-    e.target.value as (typeof PROJECT_STATUS_FILTERS)[number]["value"]
-  )
-}
-              className="rounded-md border px-3 py-2 text-sm text-[#1a3a52]"
-            >
-              {PROJECT_STATUS_FILTERS.map((f) => (
-                <option key={f.value} value={f.value}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
+<section className="py-20 bg-slate-50">
 
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="rounded-md border px-3 py-2 text-sm text-[#1a3a52]"
-            >
-              {locations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc === "all" ? "All Locations" : loc}
-                </option>
-              ))}
-            </select>
+<div className="mx-auto max-w-7xl px-4">
 
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search project"
-              className="w-full max-w-xs rounded-md border px-3 py-2 text-sm text-[#1a3a52]"
-            />
-          </div>
-        </div>
-      </section>
+<div className="mb-12 text-center">
 
-      {/* PROJECTS */}
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          {loading && (
-            <p className="text-center text-gray-500">Loading projects…</p>
-          )}
+<h2 className="text-3xl font-serif text-[#1a3a52]">
+Browse by Property Type
+</h2>
 
-          {!loading && (
-            <>
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <article
-                    key={project.id}
-                    className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-                  >
-                    <Link href={`/projects/${project.slug}`}>
-                      <ImageWithFallback
-                        src={project.gallery[0]}
-                        alt={project.name}
-                        className="h-64 w-full object-cover transition group-hover:scale-105"
-                      />
-                    </Link>
+<p className="mt-3 text-gray-500">
+Find the right property category for your investment or dream home.
+</p>
 
-                    <div className="space-y-3 p-6">
-                      <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-[#1a3a52]">
-                          {project.status}
-                        </span>
-                        <span className="text-lg font-semibold text-[#1a3a52]">
-                          ₹ {project.price}
-                        </span>
-                      </div>
+</div>
 
-                      <h2 className="text-xl font-serif text-[#1a3a52]">
-                        {project.name}
-                      </h2>
+<div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
 
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin size={16} /> {project.location}
-                      </div>
+{PROPERTY_TYPES.map((type) => (
 
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Home size={16} /> {project.configuration}
-                      </div>
-
-                      {/* ACTIONS */}
-                      <div className="grid grid-cols-2 gap-3 pt-3">
-                        <Link
-                          href={`/projects/${project.slug}`}
-                          className="rounded-md bg-[#1a3a52] py-2 text-center text-sm font-medium text-white hover:bg-[#224865]"
-                        >
-                          View Details
-                        </Link>
-
-                       <a
-  href={`tel:${EKAM_BUSINESS.phoneDial}`}
-  className="flex items-center justify-center gap-2 rounded-md border  py-2 text-sm font-medium"
+<Link
+key={type.slug}
+href={`/projects/${type.slug}`}
+className="group relative overflow-hidden rounded-xl shadow-md transition hover:-translate-y-2 hover:shadow-xl"
 >
-  <span className="text-[#1a3a52] font-bold"> Call Now</span>
-</a>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
 
-              {!filteredProjects.length && (
-                <p className="mt-16 text-center text-gray-500">
-                  No projects match your filters.
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-    </div>
-  );
+<Image
+src={type.image}
+alt={type.name}
+width={500}
+height={300}
+className="h-56 w-full object-cover transition duration-500 group-hover:scale-110"
+/>
+
+<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+<div className="absolute bottom-4 left-4 text-white">
+
+<h3 className="text-lg font-semibold">{type.name}</h3>
+
+<p className="text-xs text-gray-200 opacity-0 transition group-hover:opacity-100">
+{type.description}
+</p>
+
+</div>
+
+</Link>
+
+))}
+
+</div>
+</div>
+</section>
+
+{/* PROJECT GRID */}
+
+<section className="py-20">
+
+<div className="mx-auto max-w-7xl px-4">
+
+<h2 className="mb-10 text-3xl font-serif text-[#1a3a52]">
+All Projects
+</h2>
+
+{loading && (
+<p className="text-center text-gray-500">
+Loading projects...
+</p>
+)}
+
+{!loading && (
+
+<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+
+{filteredProjects.map((project) => (
+
+<article
+key={project.id}
+className="overflow-hidden rounded-xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+>
+
+<Link href={`/projects/${project.slug}`}>
+
+<ImageWithFallback
+src={project.gallery[0]}
+alt={project.name}
+className="h-64 w-full object-cover"
+/>
+
+</Link>
+
+<div className="space-y-3 p-6">
+
+<div className="flex items-center justify-between">
+
+<span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-[#1a3a52]">
+{project.status}
+</span>
+
+<span className="font-semibold text-[#1a3a52]">
+₹ {project.price}
+</span>
+
+</div>
+
+<h3 className="text-lg font-serif text-[#1a3a52]">
+{project.name}
+</h3>
+
+<div className="flex items-center gap-2 text-sm text-gray-600">
+<MapPin size={16} /> {project.location}
+</div>
+
+<Link
+href={`/projects/${project.slug}`}
+className="block rounded-md bg-[#1a3a52] py-2 text-center text-sm font-medium text-white hover:bg-[#224865]"
+>
+View Details
+</Link>
+
+</div>
+</article>
+
+))}
+
+</div>
+
+)}
+
+</div>
+
+</section>
+
+</div>
+);
 }
