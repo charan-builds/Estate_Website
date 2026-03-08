@@ -41,6 +41,15 @@ export type ProjectVideoType =
   | "youtube"
   | "upload";
 
+export interface ProjectVideo {
+  url: string;
+  type: ProjectVideoType;
+}
+
+  export interface NearbyLocation {
+  name: string
+  distance: string
+}
 /* -----------------------------------------
    MAIN PROJECT MODEL
 ------------------------------------------ */
@@ -59,17 +68,30 @@ export interface Project {
 
   price: string;
   description: string;
-
+  
   amenities: string[];
 
   specifications: ProjectSpecification[];
-
+  nearbyLocations?: NearbyLocation[]
   gallery: string[];
+  
 
   /* Optional Video Support */
 
   video?: string;
   videoType?: ProjectVideoType;
+  videos?: ProjectVideo[];
+
+  /* Optional Highlights & Brochure */
+
+  highlights?: string[];
+  brochureUrl?: string | null;
+
+  /* Optional Stats */
+
+  plotSize?: string | null;
+  totalUnits?: string | null;
+  launchYear?: string | null;
 
   /* Optional Meta Fields */
 

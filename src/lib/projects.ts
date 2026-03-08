@@ -13,7 +13,7 @@ import { db } from "@/lib/firebase";
 import {
   Project,
   ProjectCoordinates,
-  ProjectVideoType,
+  ProjectVideo,
 } from "@/types/project";
 
 /* -------------------------------------------------
@@ -24,7 +24,17 @@ type RawProjectData = Partial<Project> & {
   latitude?: unknown;
   longitude?: unknown;
   propertyType?: unknown;
+  videos?: unknown;
+  highlights?: unknown;
+  brochureUrl?: unknown;
+  plotSize?: unknown;
+  totalUnits?: unknown;
+  launchYear?: unknown;
+  video?: unknown;
+  videoType?: unknown;
+  nearbyLocations?: unknown;
 };
+
 /* -------------------------------------------------
    HELPERS
 -------------------------------------------------- */
@@ -42,7 +52,6 @@ function isStringArray(value: unknown): value is string[] {
 -------------------------------------------------- */
 
 function parseCoordinates(data: RawProjectData): ProjectCoordinates | undefined {
-  // Preferred modern structure
   if (
     data.coordinates &&
     typeof data.coordinates.lat === "number" &&
@@ -51,7 +60,6 @@ function parseCoordinates(data: RawProjectData): ProjectCoordinates | undefined 
     return data.coordinates;
   }
 
-  // Legacy fields support
   const lat = typeof data.latitude === "number" ? data.latitude : null;
   const lng = typeof data.longitude === "number" ? data.longitude : null;
 
@@ -63,31 +71,6 @@ function parseCoordinates(data: RawProjectData): ProjectCoordinates | undefined 
 }
 
 /* -------------------------------------------------
-   VIDEO PARSER
--------------------------------------------------- */
-
-function parseVideo(data: RawProjectData): {
-  video?: string;
-  videoType?: ProjectVideoType;
-} {
-  if (!isString(data.video)) {
-    return {};
-  }
-
-  if (data.video.includes("youtube")) {
-    return {
-      video: data.video,
-      videoType: "youtube",
-    };
-  }
-
-  return {
-    video: data.video,
-    videoType: "upload",
-  };
-}
-
-/* -------------------------------------------------
    PROJECT DATA MAPPER
 -------------------------------------------------- */
 
@@ -95,48 +78,70 @@ export function mapProjectData(
   id: string,
   data: RawProjectData
 ): Project | null {
+
   if (!isString(data.slug)) {
     return null;
   }
 
-  const videoData = parseVideo(data);
+  return {
+    id,
 
- return {
-  id,
+    name: isString(data.name) ? data.name : "",
+    slug: data.slug,
 
-  name: isString(data.name) ? data.name : "",
-  slug: data.slug,
-  location: isString(data.location) ? data.location : "",
+    location: isString(data.location) ? data.location : "",
 
-  propertyType: isString(data.propertyType)
-    ? data.propertyType
-    : "Open Plots",
+    propertyType: isString(data.propertyType)
+      ? data.propertyType
+      : "Open Plots",
 
-  coordinates: parseCoordinates(data),
+    coordinates: parseCoordinates(data),
 
-  status: data.status ?? "Ready to Move",
-  configuration: isString(data.configuration) ? data.configuration : "",
+    status: data.status ?? "Ready to Move",
 
-  price: isString(data.price) ? data.price : "",
-  description: isString(data.description) ? data.description : "",
+    configuration: isString(data.configuration)
+      ? data.configuration
+      : "",
 
-  amenities: isStringArray(data.amenities) ? data.amenities : [],
+    price: isString(data.price)
+      ? data.price
+      : "",
 
-  specifications: Array.isArray(data.specifications)
-    ? data.specifications
-    : [],
+    description: isString(data.description)
+      ? data.description
+      : "",
 
-  gallery: isStringArray(data.gallery) ? data.gallery : [],
+    amenities: isStringArray(data.amenities)
+      ? data.amenities
+      : [],
 
-  landArea: isString(data.landArea) ? data.landArea : null,
+    specifications: Array.isArray(data.specifications)
+      ? data.specifications
+      : [],
 
-  rera: isString(data.rera) ? data.rera : null,
+    gallery: isStringArray(data.gallery)
+      ? data.gallery
+      : [],
 
-  createdAt: data.createdAt,
-  updatedAt: data.updatedAt,
+    videos: Array.isArray(data.videos)
+      ? data.videos
+      : [],
 
-  ...videoData,
-};
+    nearbyLocations: Array.isArray(data.nearbyLocations)
+      ? data.nearbyLocations
+      : [],
+
+    landArea: isString(data.landArea)
+      ? data.landArea
+      : null,
+
+    rera: isString(data.rera)
+      ? data.rera
+      : null,
+
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+  };
 }
 
 /* -------------------------------------------------
@@ -154,10 +159,13 @@ export function mapProjectSnapshot(
 -------------------------------------------------- */
 
 export function buildProjectMapEmbedUrl(project: Project): string {
+
   if (project.coordinates) {
+
     const { lat, lng } = project.coordinates;
 
     return `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+
   }
 
   return `https://www.google.com/maps?q=${encodeURIComponent(
@@ -172,6 +180,7 @@ export function buildProjectMapEmbedUrl(project: Project): string {
 export async function getProjectBySlug(
   slug: string
 ): Promise<Project | null> {
+
   const q = query(
     collection(db, "projects"),
     where("slug", "==", slug),
@@ -183,8 +192,44 @@ export async function getProjectBySlug(
   if (snapshot.empty) {
     return null;
   }
+  const doc = snapshot.docs[0];
+  const data = doc.data() as RawProjectData;
+  const mapped = mapProjectSnapshot(doc);
 
-  return mapProjectSnapshot(snapshot.docs[0]);
+  if (!mapped) {
+    return null;
+  }
+
+  const rawVideos: ProjectVideo[] = Array.isArray(data.videos)
+    ? data.videos.filter(
+        (item): item is ProjectVideo =>
+          Boolean(item) &&
+          typeof item === "object" &&
+          typeof (item as { url?: unknown }).url === "string" &&
+          (((item as { type?: unknown }).type === "youtube") ||
+            (item as { type?: unknown }).type === "upload")
+      )
+    : [];
+
+  const fallbackVideos: ProjectVideo[] =
+    rawVideos.length === 0 && isString(data.video)
+      ? [
+          {
+            url: data.video,
+            type: data.videoType === "upload" ? "upload" : "youtube",
+          },
+        ]
+      : rawVideos;
+
+  return {
+    ...mapped,
+    videos: fallbackVideos,
+    highlights: isStringArray(data.highlights) ? data.highlights : [],
+    brochureUrl: isString(data.brochureUrl) ? data.brochureUrl : null,
+    plotSize: isString(data.plotSize) ? data.plotSize : null,
+    totalUnits: isString(data.totalUnits) ? data.totalUnits : null,
+    launchYear: isString(data.launchYear) ? data.launchYear : null,
+  };
 }
 
 /* -------------------------------------------------
@@ -192,6 +237,7 @@ export async function getProjectBySlug(
 -------------------------------------------------- */
 
 export async function getAllProjectSlugs(): Promise<string[]> {
+
   const snapshot = await getDocs(collection(db, "projects"));
 
   return snapshot.docs
@@ -210,6 +256,7 @@ export async function isSlugUnique(
   slug: string,
   currentProjectId?: string
 ): Promise<boolean> {
+
   const q = query(
     collection(db, "projects"),
     where("slug", "==", slug),
@@ -222,7 +269,6 @@ export async function isSlugUnique(
     return true;
   }
 
-  // Editing same project allowed
   if (currentProjectId && snapshot.docs[0].id === currentProjectId) {
     return true;
   }

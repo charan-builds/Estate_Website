@@ -11,7 +11,10 @@ import {
   MessageCircle,
   CalendarCheck,
   ShieldCheck,
-   
+  Sparkles,
+  Ruler,
+  Layers,
+  CalendarDays,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
@@ -20,7 +23,7 @@ import { ImageWithFallback } from "@/components/ImageWithFallback";
 import GalleryModal from "@/components/projects/GalleryModal";
 import LeadForm from "@/components/projects/LeadForm";
 import MapSection from "@/components/projects/MapSection";
-import { Project } from "@/types/project";
+import { Project, ProjectVideo } from "@/types/project";
 
 type Props = {
   project: Project;
@@ -91,8 +94,59 @@ export default function ProjectDetailsClient({ project }: Props) {
   };
 
   /* ---------------- VIDEO SUPPORT ---------------- */
+  const normalizedVideos: ProjectVideo[] = useMemo(() => {
+    if (Array.isArray(project.videos) && project.videos.length > 0) {
+      return project.videos.filter(
+        (item): item is ProjectVideo =>
+          Boolean(item?.url) &&
+          typeof item.url === "string" &&
+          (item.type === "youtube" || item.type === "upload")
+      );
+    }
 
-   
+    if (project.video) {
+      return [
+        {
+          url: project.video,
+          type: project.videoType === "upload" ? "upload" : "youtube",
+        },
+      ];
+    }
+
+    return [];
+  }, [project.video, project.videoType, project.videos]);
+
+  const projectHighlights = useMemo(
+    () =>
+      (project.highlights ?? []).filter(
+        (item): item is string => typeof item === "string" && item.trim().length > 0
+      ),
+    [project.highlights]
+  );
+
+  const projectStats = useMemo(
+    () =>
+      [
+        {
+          label: "Plot Size",
+          value: project.plotSize,
+          icon: Ruler,
+        },
+        {
+          label: "Total Units",
+          value: project.totalUnits,
+          icon: Layers,
+        },
+        {
+          label: "Launch Year",
+          value: project.launchYear,
+          icon: CalendarDays,
+        },
+      ].filter((item): item is { label: string; value: string; icon: typeof Ruler } => Boolean(item.value)),
+    [project.launchYear, project.plotSize, project.totalUnits]
+  );
+
+  const hasBrochure = Boolean(project.brochureUrl && project.brochureUrl.trim().length > 0);
 
   return (
     <div className="bg-slate-50 pb-24 lg:pb-0">
@@ -192,31 +246,63 @@ export default function ProjectDetailsClient({ project }: Props) {
               </Card>
             </Section>
 
-            {/* VIDEO */}
+            {projectStats.length > 0 && (
+              <Section title="Project Stats">
+                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                  {projectStats.map((item) => (
+                    <div key={item.label} className="rounded-xl border bg-white p-4 shadow-sm">
+                      <div className="mb-3 inline-flex rounded-full bg-slate-100 p-2 text-[#1a3a52]">
+                        <item.icon size={16} />
+                      </div>
+                      <p className="text-xs uppercase tracking-wide text-slate-500">{item.label}</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
 
-            {project.video && (
-  <Section title="Project Video">
+            {projectHighlights.length > 0 && (
+              <Section title="Project Highlights">
+                <Card>
+                  <ul className="space-y-3">
+                    {projectHighlights.map((item, index) => (
+                      <li key={`${item}-${index}`} className="flex items-start gap-3 text-slate-700">
+                        <Sparkles size={17} className="mt-0.5 text-[#1a3a52]" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </Section>
+            )}
 
-    <div className="overflow-hidden rounded-xl border shadow-lg">
-
-      {project.videoType === "youtube" ? (
-        <iframe
-          src={project.video}
-          className="w-full h-[420px]"
-          allowFullScreen
-        />
-      ) : (
-        <video
-          src={project.video}
-          controls
-          className="w-full"
-        />
-      )}
-
-    </div>
-
-  </Section>
-)}
+            {normalizedVideos.length > 0 && (
+              <Section title="Project Videos">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {normalizedVideos.map((item, index) => (
+                    <div key={`${item.url}-${index}`} className="overflow-hidden rounded-xl border bg-black shadow-md">
+                      {item.type === "youtube" ? (
+                        <iframe
+                          src={item.url}
+                          className="h-[220px] w-full md:h-[280px]"
+                          loading="lazy"
+                          allowFullScreen
+                          title={`${project.name} video ${index + 1}`}
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          controls
+                          preload="metadata"
+                          className="h-[220px] w-full object-cover md:h-[280px]"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
 {project.specifications && project.specifications.length > 0 && (
   <Section title="Construction & Specifications">
     <Card>
@@ -280,7 +366,26 @@ export default function ProjectDetailsClient({ project }: Props) {
               </div>
 
             </Section>
-
+            {project.nearbyLocations && project.nearbyLocations.length > 0 && (
+              <Section title="Nearby Locations">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {project.nearbyLocations.map((place, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md"
+                    >
+                      <div className="flex items-center gap-2 text-slate-900">
+                        <MapPin size={16} className="text-[#1a3a52]" />
+                        <span className="font-semibold">{place.name}</span>
+                      </div>
+                      <p className="mt-2 inline-flex rounded-full bg-[#1a3a52]/10 px-3 py-1 text-sm font-semibold text-[#1a3a52]">
+                        {place.distance}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
             <MapSection project={project} />
 
           </div>
@@ -334,12 +439,26 @@ export default function ProjectDetailsClient({ project }: Props) {
                   <CalendarCheck size={18} /> Book Site Visit
                 </button>
 
-                <button
-                  onClick={handleBrochureClick}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border text-[#123147] px-4 py-3 text-sm"
-                >
-                  <Download size={16} /> Download Brochure
-                </button>
+               {hasBrochure ? (
+  <a
+  href={`${project.brochureUrl}?fl_attachment`}
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={handleBrochureClick}
+  className="flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm text-[#123147]"
+>
+  <Download size={16} />
+  Download Brochure
+</a>
+) : (
+  <button
+    disabled
+    className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm text-slate-400"
+  >
+    <Download size={16} />
+    Brochure Coming Soon
+  </button>
+)}
 
               </div>
 
@@ -466,3 +585,4 @@ function InfoBlock({
     </div>
   );
 }
+ 

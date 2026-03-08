@@ -12,7 +12,7 @@ import {
 import { db } from "@/lib/firebase";
 import { PROJECT_STATUSES } from "@/lib/constants";
 import { buildProjectMapEmbedUrl, isSlugUnique } from "@/lib/projects";
-import { Project, ProjectSpecification } from "@/types/project";
+import { Project, ProjectSpecification, ProjectVideo } from "@/types/project";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 type ProjectFormProps = {
@@ -31,18 +31,19 @@ type FormState = {
   rera: string;
   latitude: string;
   longitude: string;
-
-  video: string;       // ⭐ add
-  videoType: "youtube" | "upload" | ""; // ⭐ add
+  video: string;
+  videoType: "youtube" | "upload" | "";
+  brochureUrl: string;
+  plotSize: string;
+  totalUnits: string;
+  launchYear: string;
 };
 
 const INITIAL_FORM: FormState = {
   name: "",
   slug: "",
   location: "",
-
-  propertyType: "Open Plots",  // ⭐ ADD
-
+  propertyType: "Open Plots",
   status: "Ready to Move",
   configuration: "",
   price: "",
@@ -50,10 +51,14 @@ const INITIAL_FORM: FormState = {
   rera: "",
   latitude: "",
   longitude: "",
-
-  video: "",       // ⭐ add
-  videoType: "",   // ⭐ add
+  video: "",
+  videoType: "",
+  brochureUrl: "",
+  plotSize: "",
+  totalUnits: "",
+  launchYear: "",
 };
+
 function generateSlug(value: string) {
   return value
     .toLowerCase()
@@ -63,27 +68,53 @@ function generateSlug(value: string) {
     .replace(/-+/g, "-");
 }
 
+function isProjectVideo(value: unknown): value is ProjectVideo {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as { url?: unknown; type?: unknown };
+  return (
+    typeof candidate.url === "string" &&
+    candidate.url.trim().length > 0 &&
+    (candidate.type === "youtube" || candidate.type === "upload")
+  );
+}
+
 export default function ProjectForm({ projectId }: ProjectFormProps) {
   const isEdit = Boolean(projectId);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const brochureInputRef = useRef<HTMLInputElement | null>(null);
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [specifications, setSpecifications] = useState<ProjectSpecification[]>([]);
   const [gallery, setGallery] = useState<string[]>([]);
+  const [videos, setVideos] = useState<ProjectVideo[]>([]);
+  const [highlights, setHighlights] = useState<string[]>([]);
+  const [nearbyLocations, setNearbyLocations] = useState<{ name: string; distance: string }[]>([]);
 
   const [amenityInput, setAmenityInput] = useState("");
   const [specLabel, setSpecLabel] = useState("");
   const [specValue, setSpecValue] = useState("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [videoUrlInput, setVideoUrlInput] = useState("");
+  const [videoTypeInput, setVideoTypeInput] = useState<"youtube" | "upload" | "">("");
+  const [highlightInput, setHighlightInput] = useState("");
+  const [nearbyName, setNearbyName] = useState("");
+  const [nearbyDistance, setNearbyDistance] = useState("");
 
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [brochureUploading, setBrochureUploading] = useState(false);
   const [loadingProject, setLoadingProject] = useState(isEdit);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const canSubmit = useMemo(() => !loading && !uploading, [loading, uploading]);
+  const canSubmit = useMemo(
+    () => !loading && !uploading && !brochureUploading,
+    [loading, uploading, brochureUploading]
+  );
 
   useEffect(() => {
     const editProjectId = projectId ?? "";
@@ -109,12 +140,27 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
         longitude?: number | null;
       };
 
+      const normalizedVideos = Array.isArray(data.videos)
+        ? data.videos.filter(isProjectVideo)
+        : [];
+
+      const legacyVideo: ProjectVideo[] =
+        normalizedVideos.length === 0 &&
+        typeof data.video === "string" &&
+        data.video.trim().length > 0
+          ? [
+              {
+                url: data.video,
+                type: data.videoType === "upload" ? "upload" : "youtube",
+              },
+            ]
+          : [];
+
       setForm({
         name: data.name ?? "",
         slug: data.slug ?? "",
         location: data.location ?? "",
-        propertyType: data.propertyType ?? "Open Plots",   // ⭐ ADD THIS
-
+        propertyType: data.propertyType ?? "Open Plots",
         status: data.status ?? "Ready to Move",
         configuration: data.configuration ?? "",
         price: data.price ?? "",
@@ -132,13 +178,20 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
             : data.longitude !== undefined && data.longitude !== null
             ? String(data.longitude)
             : "",
-            video: data.video ?? "",
-            videoType: data.videoType ?? "",
+        video: data.video ?? "",
+        videoType: data.videoType ?? "",
+        brochureUrl: data.brochureUrl ?? "",
+        plotSize: data.plotSize ?? "",
+        totalUnits: data.totalUnits ?? "",
+        launchYear: data.launchYear ?? "",
       });
 
       setAmenities(Array.isArray(data.amenities) ? data.amenities : []);
       setSpecifications(Array.isArray(data.specifications) ? data.specifications : []);
       setGallery(Array.isArray(data.gallery) ? data.gallery : []);
+      setVideos(normalizedVideos.length > 0 ? normalizedVideos : legacyVideo);
+      setHighlights(Array.isArray(data.highlights) ? data.highlights.filter((item) => typeof item === "string" && item.trim().length > 0) : []);
+      setNearbyLocations(Array.isArray(data.nearbyLocations) ? data.nearbyLocations : []);
       setLoadingProject(false);
     }
 
@@ -160,24 +213,84 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
 
   function addAmenity() {
     const value = amenityInput.trim();
-    if (!value) return;
+    if (!value) {
+      setError("Amenity cannot be empty.");
+      return;
+    }
 
     setAmenities((previous) => [...previous, value]);
     setAmenityInput("");
+    setError("");
   }
 
   function addSpecification() {
     const label = specLabel.trim();
     const value = specValue.trim();
 
-    if (!label || !value) return;
+    if (!label || !value) {
+      setError("Specification label and value are required.");
+      return;
+    }
 
     setSpecifications((previous) => [...previous, { label, value }]);
     setSpecLabel("");
     setSpecValue("");
+    setError("");
   }
 
-  async function uploadImage(file: File) {
+  function addVideo() {
+    const url = videoUrlInput.trim();
+
+    if (!url) {
+      setError("Video URL cannot be empty.");
+      return;
+    }
+
+    if (!videoTypeInput) {
+      setError("Select a video type before adding.");
+      return;
+    }
+
+    if (videos.length >= 5) {
+      setError("You can add up to 5 videos.");
+      return;
+    }
+
+    setVideos((previous) => [...previous, { url, type: videoTypeInput }]);
+    setVideoUrlInput("");
+    setVideoTypeInput("");
+    setError("");
+  }
+
+  function addHighlight() {
+    const value = highlightInput.trim();
+
+    if (!value) {
+      setError("Highlight cannot be empty.");
+      return;
+    }
+
+    setHighlights((previous) => [...previous, value]);
+    setHighlightInput("");
+    setError("");
+  }
+
+  function addNearbyLocation() {
+    const name = nearbyName.trim();
+    const distance = nearbyDistance.trim();
+
+    if (!name || !distance) {
+      setError("Nearby location name and distance are required.");
+      return;
+    }
+
+    setNearbyLocations((previous) => [...previous, { name, distance }]);
+    setNearbyName("");
+    setNearbyDistance("");
+    setError("");
+  }
+
+  async function uploadFile(file: File, resourceType: "image" | "raw") {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
@@ -189,18 +302,18 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
 
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
       method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error("Image upload failed.");
+      throw new Error("File upload failed.");
     }
 
     const data = (await response.json()) as { secure_url?: string };
     if (!data.secure_url) {
-      throw new Error("Image upload URL is missing.");
+      throw new Error("Uploaded file URL is missing.");
     }
 
     return data.secure_url;
@@ -213,7 +326,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
     setError("");
 
     try {
-      const urls = await Promise.all(Array.from(event.target.files).map(uploadImage));
+      const urls = await Promise.all(Array.from(event.target.files).map((file) => uploadFile(file, "image")));
       setGallery((previous) => [...previous, ...urls]);
     } catch {
       setError("Failed to upload image(s). Please try again.");
@@ -221,6 +334,34 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       setUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+    }
+  }
+
+  async function handleBrochureChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setError("Brochure must be a PDF file.");
+      if (brochureInputRef.current) {
+        brochureInputRef.current.value = "";
+      }
+      return;
+    }
+
+    setBrochureUploading(true);
+    setError("");
+
+    try {
+      const url = await uploadFile(file, "raw");
+      updateFormField("brochureUrl", url);
+    } catch {
+      setError("Failed to upload brochure. Please try again.");
+    } finally {
+      setBrochureUploading(false);
+      if (brochureInputRef.current) {
+        brochureInputRef.current.value = "";
       }
     }
   }
@@ -279,6 +420,15 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       return;
     }
 
+    const normalizedVideos = videos
+      .map((item) => ({
+        url: item.url.trim(),
+        type: item.type,
+      }))
+      .filter((item) => item.url.length > 0);
+
+    const primaryVideo = normalizedVideos[0];
+
     const payload = {
       name: form.name.trim(),
       slug: normalizedSlug,
@@ -291,15 +441,21 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       amenities,
       specifications,
       gallery,
-      video: form.video.trim() || null,
-      videoType: form.videoType || null,
+      nearbyLocations,
+      videos: normalizedVideos,
+      video: primaryVideo?.url ?? null,
+      videoType: primaryVideo?.type ?? null,
+      highlights: highlights.map((item) => item.trim()).filter((item) => item.length > 0),
+      brochureUrl: form.brochureUrl.trim() || null,
+      plotSize: form.plotSize.trim() || null,
+      totalUnits: form.totalUnits.trim() || null,
+      launchYear: form.launchYear.trim() || null,
       rera: form.rera.trim() || null,
       coordinates:
         latitude !== null && longitude !== null
           ? { lat: latitude, lng: longitude }
           : null,
       updatedAt: serverTimestamp(),
-      
     };
 
     try {
@@ -316,6 +472,9 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
         setAmenities([]);
         setSpecifications([]);
         setGallery([]);
+        setVideos([]);
+        setHighlights([]);
+        setNearbyLocations([]);
         setMessage("Project created successfully.");
       }
     } catch {
@@ -332,8 +491,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
     name: form.name,
     slug: form.slug,
     location: form.location,
-    propertyType: form.propertyType,   // ⭐ ADD THIS
-
+    propertyType: form.propertyType,
     status: form.status,
     configuration: form.configuration,
     price: form.price,
@@ -372,7 +530,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 value={form.name}
                 onChange={handleNameChange}
                 className={INPUT_CLASS}
-                placeholder="Ekam Heights"
+                placeholder="Ekam Green Valley"
                 required
               />
             </Field>
@@ -382,7 +540,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 value={form.slug}
                 onChange={(event) => updateFormField("slug", generateSlug(event.target.value))}
                 className={INPUT_CLASS}
-                placeholder="ekam-heights"
+                placeholder="ekam-green-valley"
                 required
               />
             </Field>
@@ -392,7 +550,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 value={form.location}
                 onChange={(event) => updateFormField("location", event.target.value)}
                 className={INPUT_CLASS}
-                placeholder="Hyderabad"
+                placeholder="Sangareddy, Hyderabad"
                 required
               />
             </Field>
@@ -417,37 +575,32 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 value={form.configuration}
                 onChange={(event) => updateFormField("configuration", event.target.value)}
                 className={INPUT_CLASS}
-                placeholder="2 & 3 BHK"
+                placeholder="200-400 Sq Yards"
                 required
               />
             </Field>
-             <Field label="Property Type" required>
-<select
-  value={form.propertyType}
-  onChange={(e) =>
-    updateFormField(
-      "propertyType",
-      e.target.value as Project["propertyType"]
-    )
-  }
-  className={INPUT_CLASS}
-  required
->
-  <option value="Open Plots">Open Plots</option>
-  <option value="Villas">Villas</option>
-  <option value="Apartments">Apartments</option>
-  <option value="Farm Plots">Farm Plots</option>
-  <option value="Highway Plots">Highway Plots</option>
-</select>
-</Field>
 
+            <Field label="Property Type" required>
+              <select
+                value={form.propertyType}
+                onChange={(event) => updateFormField("propertyType", event.target.value as Project["propertyType"])}
+                className={INPUT_CLASS}
+                required
+              >
+                <option value="Open Plots">Open Plots</option>
+                <option value="Villas">Villas</option>
+                <option value="Apartments">Apartments</option>
+                <option value="Farm Plots">Farm Plots</option>
+                <option value="Highway Plots">Highway Plots</option>
+              </select>
+            </Field>
 
             <Field label="Price" required>
               <input
                 value={form.price}
                 onChange={(event) => updateFormField("price", event.target.value)}
                 className={INPUT_CLASS}
-                placeholder="Starts at ₹75 Lakhs"
+                placeholder="Starts at Rs 24 Lakhs"
                 required
               />
             </Field>
@@ -467,11 +620,41 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
               value={form.description}
               onChange={(event) => updateFormField("description", event.target.value)}
               className={`${INPUT_CLASS} min-h-28`}
-              placeholder="Describe the project highlights"
+              placeholder="Premium gated plotted development near Mumbai Highway"
               required
             />
           </Field>
+        </Section>
 
+        <Section title="Project Stats (Optional)">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label="Plot Size">
+              <input
+                value={form.plotSize}
+                onChange={(event) => updateFormField("plotSize", event.target.value)}
+                className={INPUT_CLASS}
+                placeholder="200-400 Sq Yards"
+              />
+            </Field>
+
+            <Field label="Total Units">
+              <input
+                value={form.totalUnits}
+                onChange={(event) => updateFormField("totalUnits", event.target.value)}
+                className={INPUT_CLASS}
+                placeholder="180 Plots"
+              />
+            </Field>
+
+            <Field label="Launch Year">
+              <input
+                value={form.launchYear}
+                onChange={(event) => updateFormField("launchYear", event.target.value)}
+                className={INPUT_CLASS}
+                placeholder="2024"
+              />
+            </Field>
+          </div>
         </Section>
 
         <Section title="Location Map Coordinates">
@@ -493,9 +676,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 placeholder="78.4867"
               />
             </Field>
-           
           </div>
-
 
           <div className="flex flex-wrap items-center gap-3">
             <a
@@ -552,19 +733,48 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
           </div>
         </Section>
 
+        <Section title="Project Highlights">
+          <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+            <input
+              value={highlightInput}
+              onChange={(event) => setHighlightInput(event.target.value)}
+              className={INPUT_CLASS}
+              placeholder="HMDA Approved Layout"
+            />
+            <button type="button" onClick={addHighlight} className={SECONDARY_BUTTON_CLASS}>
+              Add Highlight
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {highlights.map((highlight, index) => (
+              <div key={`${highlight}-${index}`} className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2">
+                <span className="text-sm text-slate-700">{highlight}</span>
+                <button
+                  type="button"
+                  onClick={() => setHighlights((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}
+                  className="text-red-600 transition hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </Section>
+
         <Section title="Specifications">
           <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
             <input
               value={specLabel}
               onChange={(event) => setSpecLabel(event.target.value)}
               className={INPUT_CLASS}
-              placeholder="Possession"
+              placeholder="Road Width"
             />
             <input
               value={specValue}
               onChange={(event) => setSpecValue(event.target.value)}
               className={INPUT_CLASS}
-              placeholder="Dec 2027"
+              placeholder="40 Ft"
             />
             <button type="button" onClick={addSpecification} className={SECONDARY_BUTTON_CLASS}>
               Add
@@ -579,6 +789,56 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 <button
                   type="button"
                   onClick={() => setSpecifications((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}
+                  className="text-red-600 transition hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Nearby Locations">
+          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+            <input
+              value={nearbyName}
+              onChange={(event) => setNearbyName(event.target.value)}
+              placeholder="Woxsen University"
+              className={INPUT_CLASS}
+            />
+
+            <input
+              value={nearbyDistance}
+              onChange={(event) => setNearbyDistance(event.target.value)}
+              placeholder="10 mins"
+              className={INPUT_CLASS}
+            />
+
+            <button
+              type="button"
+              onClick={addNearbyLocation}
+              className={SECONDARY_BUTTON_CLASS}
+            >
+              Add
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {nearbyLocations.map((place, index) => (
+              <div
+                key={`${place.name}-${place.distance}-${index}`}
+                className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2"
+              >
+                <span className="text-sm text-slate-700">
+                  {place.name} - {place.distance}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNearbyLocations((previous) =>
+                      previous.filter((_, itemIndex) => itemIndex !== index)
+                    )
+                  }
                   className="text-red-600 transition hover:text-red-700"
                 >
                   Remove
@@ -619,41 +879,88 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
             ))}
           </div>
         </Section>
-        <Section title="Project Video">
 
-  <Field label="Video URL">
-    <input
-      value={form.video}
-      onChange={(e) => updateFormField("video", e.target.value)}
-      className={INPUT_CLASS}
-      placeholder="YouTube embed URL or video link"
-    />
-  </Field>
+        <Section title="Project Videos">
+          <div className="grid gap-3 md:grid-cols-[2fr_1fr_auto]">
+            <input
+              value={videoUrlInput}
+              onChange={(event) => setVideoUrlInput(event.target.value)}
+              className={INPUT_CLASS}
+              placeholder="https://youtube.com/embed/abc"
+            />
 
-  <Field label="Video Type">
-    <select
-      value={form.videoType}
-      onChange={(e) =>
-        updateFormField(
-          "videoType",
-          e.target.value as "youtube" | "upload" | ""
-        )
-      }
-      className={INPUT_CLASS}
-    >
-      <option value="">Select Type</option>
-      <option value="youtube">YouTube</option>
-      <option value="upload">Uploaded Video</option>
-    </select>
-  </Field>
+            <select
+              value={videoTypeInput}
+              onChange={(event) => setVideoTypeInput(event.target.value as "youtube" | "upload" | "")}
+              className={INPUT_CLASS}
+            >
+              <option value="">Select Type</option>
+              <option value="youtube">YouTube</option>
+              <option value="upload">Uploaded Video</option>
+            </select>
 
-</Section>
+            <button type="button" onClick={addVideo} className={SECONDARY_BUTTON_CLASS}>
+              Add Video
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-500">Add up to 5 videos. Use embed URL for YouTube videos.</p>
+
+          <div className="space-y-2">
+            {videos.map((item, index) => (
+              <div key={`${item.url}-${index}`} className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-slate-500">{item.type}</p>
+                  <p className="break-all text-sm text-slate-700">{item.url}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setVideos((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}
+                  className="text-sm text-red-600 transition hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Brochure (Optional)">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Upload Brochure PDF">
+              <input
+                ref={brochureInputRef}
+                type="file"
+                accept="application/pdf"
+                disabled={brochureUploading}
+                onChange={handleBrochureChange}
+                className="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-[#1a3a52] file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#224865] disabled:opacity-60"
+              />
+            </Field>
+
+            <Field label="Brochure URL">
+              <input
+                value={form.brochureUrl}
+                onChange={(event) => updateFormField("brochureUrl", event.target.value)}
+                className={INPUT_CLASS}
+                placeholder="https://cdn.site.com/project-brochure.pdf"
+              />
+            </Field>
+          </div>
+          {brochureUploading ? <p className="text-sm text-slate-600">Uploading brochure...</p> : null}
+        </Section>
 
         <button type="submit" disabled={!canSubmit} className={PRIMARY_BUTTON_CLASS}>
-          {uploading ? "Uploading images..." : loading ? "Saving..." : isEdit ? "Update Project" : "Create Project"}
+          {uploading || brochureUploading
+            ? "Uploading files..."
+            : loading
+            ? "Saving..."
+            : isEdit
+            ? "Update Project"
+            : "Create Project"}
         </button>
       </form>
-    
+
       {previewImage ? (
         <div
           role="dialog"
@@ -679,7 +986,6 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
           </div>
         </div>
       ) : null}
-      
     </>
   );
 }
