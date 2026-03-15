@@ -68,6 +68,9 @@ export interface Project {
 
   price: string;
   description: string;
+
+  bedrooms?: number | null;
+  bathrooms?: number | null;
   
   amenities: string[];
 

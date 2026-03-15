@@ -28,6 +28,8 @@ type FormState = {
   configuration: string;
   price: string;
   description: string;
+  bedrooms: string;
+  bathrooms: string;
   rera: string;
   latitude: string;
   longitude: string;
@@ -48,6 +50,8 @@ const INITIAL_FORM: FormState = {
   configuration: "",
   price: "",
   description: "",
+  bedrooms: "",
+  bathrooms: "",
   rera: "",
   latitude: "",
   longitude: "",
@@ -165,6 +169,8 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
         configuration: data.configuration ?? "",
         price: data.price ?? "",
         description: data.description ?? "",
+        bedrooms: data.bedrooms ? String(data.bedrooms) : "",
+        bathrooms: data.bathrooms ? String(data.bathrooms) : "",
         rera: data.rera ?? "",
         latitude:
           data.coordinates?.lat !== undefined
@@ -438,6 +444,8 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       configuration: form.configuration.trim(),
       price: form.price.trim(),
       description: form.description.trim(),
+      bedrooms: form.bedrooms.trim() ? Number(form.bedrooms) : null,
+      bathrooms: form.bathrooms.trim() ? Number(form.bathrooms) : null,
       amenities,
       specifications,
       gallery,
@@ -577,6 +585,28 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 className={INPUT_CLASS}
                 placeholder="200-400 Sq Yards"
                 required
+              />
+            </Field>
+
+            <Field label="Bedrooms">
+              <input
+                type="number"
+                value={form.bedrooms}
+                onChange={(event) => updateFormField("bedrooms", event.target.value)}
+                className={INPUT_CLASS}
+                placeholder="2"
+                min="0"
+              />
+            </Field>
+
+            <Field label="Bathrooms">
+              <input
+                type="number"
+                value={form.bathrooms}
+                onChange={(event) => updateFormField("bathrooms", event.target.value)}
+                className={INPUT_CLASS}
+                placeholder="2"
+                min="0"
               />
             </Field>
 

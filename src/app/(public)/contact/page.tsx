@@ -338,6 +338,90 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* Office Location Map */}
+      <section className="py-16 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif text-[#1a3a52] mb-4">Visit Our Office</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Located in the heart of the city, our office is easily accessible for all your property needs.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.3578!2d78.4867!3d17.3850!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb99c7458e5c5d%3A0x1234567890abcdef!2sEkam%20Properties!5e0!3m2!1sen!2sin!4v1234567890!5m2!1sen!2sin"
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Ekam Properties Office Location"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif text-[#1a3a52] mb-4">Frequently Asked Questions</h2>
+            <p className="text-gray-600">
+              Find answers to common questions about our properties and services.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <details className="bg-white border border-gray-200 rounded-lg p-6">
+              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
+                How do I schedule a site visit?
+              </summary>
+              <div className="mt-4 text-gray-600">
+                You can schedule a site visit by filling out our contact form, calling us directly, or using our quick action buttons. Our team will coordinate with you to arrange a convenient time and provide transportation if needed.
+              </div>
+            </details>
+
+            <details className="bg-white border border-gray-200 rounded-lg p-6">
+              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
+                Are your projects DTCP approved?
+              </summary>
+              <div className="mt-4 text-gray-600">
+                Yes, all our projects are fully approved by DTCP (Directorate of Town and Country Planning) and comply with RERA regulations. We ensure complete transparency and legal compliance in all our developments.
+              </div>
+            </details>
+
+            <details className="bg-white border border-gray-200 rounded-lg p-6">
+              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
+                Do you provide loan assistance?
+              </summary>
+              <div className="mt-4 text-gray-600">
+                Yes, we partner with leading banks and financial institutions to provide home loan assistance. Our financial advisors can help you understand your eligibility, compare loan options, and guide you through the application process.
+              </div>
+            </details>
+
+            <details className="bg-white border border-gray-200 rounded-lg p-6">
+              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
+                What is the typical project completion timeline?
+              </summary>
+              <div className="mt-4 text-gray-600">
+                Our project timelines vary based on the scope and complexity, but we are committed to timely delivery. Residential projects typically take 24-36 months from launch to possession, with regular progress updates provided to all stakeholders.
+              </div>
+            </details>
+
+            <details className="bg-white border border-gray-200 rounded-lg p-6">
+              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
+                Are there any hidden costs?
+              </summary>
+              <div className="mt-4 text-gray-600">
+                We maintain complete transparency in our pricing. All costs including registration, stamp duty, and other charges are clearly disclosed upfront. There are no hidden fees or additional costs beyond what&apos;s mentioned in your agreement.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

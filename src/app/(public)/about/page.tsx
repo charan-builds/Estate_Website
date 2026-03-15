@@ -1,6 +1,21 @@
-"use client";
-import { CheckCircle2, Award, Target, Eye } from "lucide-react";
+import { CheckCircle2, Award, Target, Eye, ShieldCheck, MapPin, Clock, Users } from "lucide-react";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Ekam Properties | Trusted Real Estate Developer",
+  description: "Learn about Ekam Properties - 25+ years of excellence in real estate development. Discover our mission, vision, and commitment to quality construction.",
+  openGraph: {
+    title: "About Ekam Properties | Trusted Real Estate Developer",
+    description: "Learn about Ekam Properties - 25+ years of excellence in real estate development. Discover our mission, vision, and commitment to quality construction.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Ekam Properties | Trusted Real Estate Developer",
+    description: "Learn about Ekam Properties - 25+ years of excellence in real estate development.",
+  },
+};
 
  
 export default function About() {
@@ -234,6 +249,118 @@ export default function About() {
                 <p className="text-[#1a3a52]">Sunil Chandra</p>
                 <p className="text-gray-600 text-sm">Managing Director, Ekam Properties</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif text-[#1a3a52] mb-4">
+              Meet Our Leadership Team
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Experienced professionals dedicated to your real estate success
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+              <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <h3 className="text-xl font-serif text-[#1a3a52] mb-2">Sunil Chandra</h3>
+              <p className="text-[#1a3a52] font-medium mb-3">Managing Director</p>
+              <p className="text-gray-600 text-sm">
+                With over 25 years in real estate, Sunil leads our vision of creating sustainable communities and exceptional living spaces.
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+              <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <h3 className="text-xl font-serif text-[#1a3a52] mb-2">Priya Sharma</h3>
+              <p className="text-[#1a3a52] font-medium mb-3">Head of Sales</p>
+              <p className="text-gray-600 text-sm">
+                Expert in customer relations and market analysis, Priya ensures every client finds their perfect property match.
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+              <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <h3 className="text-xl font-serif text-[#1a3a52] mb-2">Rajesh Kumar</h3>
+              <p className="text-[#1a3a52] font-medium mb-3">Project Manager</p>
+              <p className="text-gray-600 text-sm">
+                Oversees construction quality and timelines, ensuring projects are delivered on time with superior craftsmanship.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif text-[#1a3a52] mb-4">
+              Why Choose Ekam Properties
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              What sets us apart in the real estate industry
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1a3a52] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="text-white" size={24} />
+              </div>
+              <h3 className="text-lg font-serif text-[#1a3a52] mb-3">Verified Projects</h3>
+              <p className="text-gray-600 text-sm">
+                All our projects are thoroughly verified and approved by relevant authorities.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1a3a52] rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="text-white" size={24} />
+              </div>
+              <h3 className="text-lg font-serif text-[#1a3a52] mb-3">DTCP & RERA Approved</h3>
+              <p className="text-gray-600 text-sm">
+                Complete compliance with DTCP and RERA regulations for your peace of mind.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1a3a52] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Target className="text-white" size={24} />
+              </div>
+              <h3 className="text-lg font-serif text-[#1a3a52] mb-3">Investment Guidance</h3>
+              <p className="text-gray-600 text-sm">
+                Expert advice on property investment opportunities and market trends.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1a3a52] rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="text-white" size={24} />
+              </div>
+              <h3 className="text-lg font-serif text-[#1a3a52] mb-3">Site Visit Support</h3>
+              <p className="text-gray-600 text-sm">
+                Arranged transportation and guided tours of project locations.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1a3a52] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="text-white" size={24} />
+              </div>
+              <h3 className="text-lg font-serif text-[#1a3a52] mb-3">Timely Delivery</h3>
+              <p className="text-gray-600 text-sm">
+                Proven track record of delivering projects on time as promised.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1a3a52] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="text-white" size={24} />
+              </div>
+              <h3 className="text-lg font-serif text-[#1a3a52] mb-3">Customer First</h3>
+              <p className="text-gray-600 text-sm">
+                Dedicated support from booking to possession and beyond.
+              </p>
             </div>
           </div>
         </div>

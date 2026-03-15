@@ -11,7 +11,7 @@ export const EKAM_BUSINESS = {
     "Telangana - 500032",
   ],
   email: "info@ekamproperties.com",
-  reraBadge: "TG RERA Certified Real Estate Agent",
+  reraBadge: "TG RERA Certified Real Estate",
   reraDisclaimer:
     "All project details are subject to RERA approvals and final agreements. Please verify official documents before booking.",
 };
