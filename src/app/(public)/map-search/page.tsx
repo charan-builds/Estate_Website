@@ -7,7 +7,7 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { db } from "@/lib/firebase";
 import { buildProjectMapEmbedUrl, mapProjectSnapshot } from "@/lib/projects";
-import { Project } from "@/types/project";
+import { Project, ProjectCoordinates } from "@/types/project";
 
 declare global {
   interface Window {
@@ -31,9 +31,21 @@ type GoogleMapMarkerInstance = {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
+function hasCoordinates(project: Project): project is Project & { coordinates: ProjectCoordinates } {
+  return project.coordinates !== undefined;
+}
+
+function getGoogleMapsApi() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return window.google?.maps;
+}
+
 function loadGoogleMapsScript() {
   return new Promise<void>((resolve, reject) => {
-    if (window.google?.maps) {
+    if (getGoogleMapsApi()) {
       resolve();
       return;
     }
@@ -80,7 +92,7 @@ export default function MapSearchPage() {
   }, [projects, selectedProjectId]);
 
   useEffect(() => {
-    if (!GOOGLE_MAPS_API_KEY || !mapRef.current || !projects.length) {
+    if (typeof window === "undefined" || !GOOGLE_MAPS_API_KEY || !mapRef.current || !projects.length) {
       return;
     }
 
@@ -88,14 +100,18 @@ export default function MapSearchPage() {
 
     loadGoogleMapsScript()
       .then(() => {
-        if (cancelled || !mapRef.current || !window.google?.maps) {
+        const googleMaps = getGoogleMapsApi();
+
+        if (cancelled || !mapRef.current || !googleMaps) {
           return;
         }
 
         const centerProject =
-          selectedProject && selectedProject.coordinates ? selectedProject : projects.find((project) => project.coordinates);
+          selectedProject && hasCoordinates(selectedProject)
+            ? selectedProject
+            : projects.find(hasCoordinates);
 
-        const map = new window.google.maps.Map(mapRef.current, {
+        const map = new googleMaps.Map(mapRef.current, {
           center: centerProject?.coordinates || { lat: 17.385, lng: 78.4867 },
           zoom: centerProject?.coordinates ? 11 : 8,
           mapTypeControl: false,
@@ -104,9 +120,9 @@ export default function MapSearchPage() {
         });
 
         projects
-          .filter((project) => project.coordinates)
+          .filter(hasCoordinates)
           .forEach((project) => {
-            const marker = new window.google.maps.Marker({
+            const marker = new googleMaps.Marker({
               map,
               position: project.coordinates,
               title: project.name,
