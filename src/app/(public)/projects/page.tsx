@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import ProjectsPageClient from "@/components/projects/ProjectsPageClient";
 import { PROJECT_SUBCATEGORY_OPTIONS } from "@/lib/constants";
@@ -40,5 +41,9 @@ export function generateMetadata({ searchParams }: ProjectsPageProps): Metadata 
 }
 
 export default function ProjectsPage() {
-  return <ProjectsPageClient />;
+  return (
+    <Suspense fallback={null}>
+      <ProjectsPageClient />
+    </Suspense>
+  );
 }

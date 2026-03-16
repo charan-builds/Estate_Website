@@ -1,9 +1,10 @@
 "use client";
 
+import { PropsWithChildren } from "react";
 import { HTMLMotionProps, motion } from "framer-motion";
 import { staggerContainerVariants, viewportOnce } from "./motion";
 
-type StaggerContainerProps = HTMLMotionProps<"div">;
+type StaggerContainerProps = PropsWithChildren<HTMLMotionProps<"div">>;
 
 export default function StaggerContainer({
   children,

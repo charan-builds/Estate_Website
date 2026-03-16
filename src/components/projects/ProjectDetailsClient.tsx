@@ -96,8 +96,8 @@ export default function ProjectDetailsClient({ project }: Props) {
       const currentPriceBucket = project.price.replace(/[^\d.]/g, "");
       const related = snapshot.docs
         .map(mapProjectSnapshot)
-        .filter(Boolean)
-        .filter((item): item is Project => Boolean(item) && item.slug !== project.slug)
+        .filter((item): item is Project => item !== null)
+        .filter((item) => item.slug !== project.slug)
         .filter(
           (item) =>
             item.location === project.location ||

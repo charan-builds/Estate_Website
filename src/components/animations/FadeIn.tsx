@@ -1,9 +1,10 @@
 "use client";
 
+import { PropsWithChildren } from "react";
 import { HTMLMotionProps, motion } from "framer-motion";
 import { fadeInVariants, viewportOnce } from "./motion";
 
-type FadeInProps = HTMLMotionProps<"div">;
+type FadeInProps = PropsWithChildren<HTMLMotionProps<"div">>;
 
 export default function FadeIn({ children, ...props }: FadeInProps) {
   return (
