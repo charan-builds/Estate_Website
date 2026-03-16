@@ -1,6 +1,6 @@
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { LeadType } from "@/types/lead";
+import { LeadSource, LeadType } from "@/types/lead";
 
 interface CreateLeadInput {
   type: LeadType;
@@ -11,7 +11,7 @@ interface CreateLeadInput {
   projectName?: string;
   preferredDate?: string;
   preferredTime?: string;
-  source?: string;
+  source?: LeadSource;
 }
 
 export async function createLead(input: CreateLeadInput) {
@@ -24,7 +24,7 @@ export async function createLead(input: CreateLeadInput) {
 export async function createInteractionLead(input: {
   projectId?: string;
   projectName?: string;
-  source: string;
+  source: LeadSource;
 }) {
   await addDoc(collection(db, "leads"), {
     type: "enquiry",

@@ -1,4 +1,5 @@
 import { EKAM_BUSINESS } from "@/lib/business";
+import { LeadSource } from "@/types/lead";
 
 /* ---------------- TYPES ---------------- */
 
@@ -14,7 +15,7 @@ export type LeadPayload = {
     | "Request Call Back"
     | "Download Brochure"
     | "General Enquiry";
-  source?: string;
+  source?: LeadSource;
 };
 
 /* ---------------- WHATSAPP ---------------- */

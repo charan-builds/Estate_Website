@@ -13,7 +13,6 @@ import { Project } from "@/types/project";
 
 type DashboardLead = Lead & {
   enquiryType?: string;
-  source?: string;
 };
 
 export default function AdminDashboard() {
@@ -44,7 +43,9 @@ export default function AdminDashboard() {
   }, []);
 
   const totalLeads = leads.length;
-  const projectViews = leads.filter((lead) => lead.source === "project_detail" || lead.source === "project-page").length;
+  const projectViews = leads.filter(
+    (lead) => lead.source === "project_detail" || lead.source === "project-page"
+  ).length;
   const brochureDownloads = leads.filter(
     (lead) => lead.enquiryType === "Download Brochure" || lead.type === "download-brochure"
   ).length;
