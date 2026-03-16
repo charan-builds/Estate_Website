@@ -1,5 +1,6 @@
 "use client";
 import { ButtonHTMLAttributes, ReactNode } from "react";
+import { motion } from "framer-motion";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost";
@@ -34,11 +35,14 @@ export default function Button({
   const widthClass = fullWidth ? "w-full" : "";
   
   return (
-    <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthClass} ${className} transform hover:scale-105`}
+    <motion.button
+      whileHover={{ scale: 1.05, boxShadow: "0 12px 30px rgba(26,58,82,0.18)" }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 320, damping: 18 }}
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthClass} ${className}`}
       {...props}
     >
       {children}
-    </button>
+    </motion.button>
   );
 }

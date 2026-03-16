@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import ScrollProgressBar from "@/components/ScrollProgressBar";
 import { EKAM_BUSINESS, getOfficeAddressText } from "@/lib/business";
 
 const geistSans = localFont({
@@ -72,6 +73,7 @@ export default function RootLayout({
         />
 
         <GoogleAnalytics />
+        <ScrollProgressBar />
 
         {/* Header (client component is OK here) */}
         <Header />

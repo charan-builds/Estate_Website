@@ -10,7 +10,11 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { PROJECT_STATUSES } from "@/lib/constants";
+import {
+  PROJECT_MAIN_CATEGORY_OPTIONS,
+  PROJECT_STATUSES,
+  PROJECT_SUBCATEGORY_OPTIONS,
+} from "@/lib/constants";
 import { buildProjectMapEmbedUrl, isSlugUnique } from "@/lib/projects";
 import { Project, ProjectSpecification, ProjectVideo } from "@/types/project";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
@@ -24,6 +28,9 @@ type FormState = {
   slug: string;
   location: string;
   propertyType: Project["propertyType"];
+  mainCategory: Project["mainCategory"] | "";
+  subCategory: Project["subCategory"] | "";
+  hotDeal: boolean;
   status: Project["status"];
   configuration: string;
   price: string;
@@ -46,6 +53,9 @@ const INITIAL_FORM: FormState = {
   slug: "",
   location: "",
   propertyType: "Open Plots",
+  mainCategory: "",
+  subCategory: "",
+  hotDeal: false,
   status: "Ready to Move",
   configuration: "",
   price: "",
@@ -165,6 +175,9 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
         slug: data.slug ?? "",
         location: data.location ?? "",
         propertyType: data.propertyType ?? "Open Plots",
+        mainCategory: data.mainCategory ?? "",
+        subCategory: data.subCategory ?? "",
+        hotDeal: Boolean(data.hotDeal),
         status: data.status ?? "Ready to Move",
         configuration: data.configuration ?? "",
         price: data.price ?? "",
@@ -207,6 +220,12 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
   function updateFormField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
   }
+
+  const subCategoryOptions = useMemo(() => {
+    return form.mainCategory
+      ? PROJECT_SUBCATEGORY_OPTIONS[form.mainCategory]
+      : [];
+  }, [form.mainCategory]);
 
   function handleNameChange(event: ChangeEvent<HTMLInputElement>) {
     const value = event.target.value;
@@ -440,6 +459,9 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
       slug: normalizedSlug,
       location: form.location.trim(),
       propertyType: form.propertyType,
+      mainCategory: form.mainCategory || null,
+      subCategory: form.subCategory || null,
+      hotDeal: form.hotDeal,
       status: form.status,
       configuration: form.configuration.trim(),
       price: form.price.trim(),
@@ -500,6 +522,9 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
     slug: form.slug,
     location: form.location,
     propertyType: form.propertyType,
+    mainCategory: form.mainCategory || null,
+    subCategory: form.subCategory || null,
+    hotDeal: form.hotDeal,
     status: form.status,
     configuration: form.configuration,
     price: form.price,
@@ -623,6 +648,57 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
                 <option value="Farm Plots">Farm Plots</option>
                 <option value="Highway Plots">Highway Plots</option>
               </select>
+            </Field>
+
+            <Field label="Main Category">
+              <select
+                value={form.mainCategory}
+                onChange={(event) => {
+                  const nextMainCategory = event.target.value as FormState["mainCategory"];
+                  setForm((previous) => ({
+                    ...previous,
+                    mainCategory: nextMainCategory,
+                    subCategory: "",
+                  }));
+                }}
+                className={INPUT_CLASS}
+              >
+                <option value="">Select main category</option>
+                {PROJECT_MAIN_CATEGORY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Sub Category">
+              <select
+                value={form.subCategory}
+                onChange={(event) => updateFormField("subCategory", event.target.value as FormState["subCategory"])}
+                className={INPUT_CLASS}
+                disabled={!form.mainCategory}
+              >
+                <option value="">
+                  {form.mainCategory ? "Select sub category" : "Choose main category first"}
+                </option>
+                {subCategoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Hot Deal">
+              <label className="flex items-center gap-3 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={form.hotDeal}
+                  onChange={(event) => updateFormField("hotDeal", event.target.checked)}
+                />
+                Highlight this project as a Hot Deal
+              </label>
             </Field>
 
             <Field label="Price" required>

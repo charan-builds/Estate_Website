@@ -20,3 +20,19 @@ export async function createLead(input: CreateLeadInput) {
     createdAt: serverTimestamp(),
   });
 }
+
+export async function createInteractionLead(input: {
+  projectId?: string;
+  projectName?: string;
+  source: string;
+}) {
+  await addDoc(collection(db, "leads"), {
+    type: "enquiry",
+    name: "Website Visitor",
+    phone: "N/A",
+    projectId: input.projectId,
+    projectName: input.projectName,
+    source: input.source,
+    createdAt: serverTimestamp(),
+  });
+}

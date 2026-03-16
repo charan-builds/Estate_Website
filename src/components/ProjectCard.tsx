@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { Project } from "@/types/project";
+import { fadeInUpVariants } from "@/components/animations/motion";
 
 type ProjectCardProps = Pick<
   Project,
@@ -22,9 +24,14 @@ export default function ProjectCard({
   image,
 }: ProjectCardProps) {
   return (
+    <motion.div
+      variants={fadeInUpVariants}
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 240, damping: 18 }}
+    >
     <Link
       href={`/projects/${slug}`}
-      className="group overflow-hidden border border-[--grey-200] bg-white transition-all duration-300 hover:shadow-[--shadow-lg]"
+      className="group block overflow-hidden border border-[--grey-200] bg-white transition-all duration-300 hover:shadow-[--shadow-lg]"
     >
       <div className="aspect-[4/3] overflow-hidden bg-[--grey-100]">
         <ImageWithFallback
@@ -57,5 +64,6 @@ export default function ProjectCard({
         </div>
       </div>
     </Link>
+    </motion.div>
   );
 }

@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, ShieldCheck } from "lucide-react";
 import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from "firebase/firestore";
+
+import FadeIn from "@/components/animations/FadeIn";
+import SlideUp from "@/components/animations/SlideUp";
+import StaggerContainer from "@/components/animations/StaggerContainer";
+import { fadeInUpVariants } from "@/components/animations/motion";
 import { db } from "@/lib/firebase";
 import { trackEvent } from "@/lib/analytics";
 import { EKAM_BUSINESS, getOfficeAddressText } from "@/lib/business";
@@ -119,21 +125,44 @@ export default function Contact() {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  const faqs = [
+    {
+      question: "How do I schedule a site visit?",
+      answer:
+        "Use the form, call us directly, or choose the quick action for a site visit. Our team will coordinate the timing and next steps with you.",
+    },
+    {
+      question: "Are your projects approved?",
+      answer:
+        "Our team only presents verified opportunities and supports buyers with transparent approval information throughout the process.",
+    },
+    {
+      question: "Do you provide loan assistance?",
+      answer:
+        "Yes, we help buyers understand available financing options and can guide them through the loan support process.",
+    },
+  ];
+
   return (
     <div className="bg-white">
-      <section className="bg-[#1a3a52] py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="mb-4 text-4xl font-serif text-white md:text-5xl">Contact Us</h1>
-          <p className="max-w-2xl text-xl text-gray-200">
-            Connect with our advisors for verified project details, site visits, and pricing.
-          </p>
+      <section className="relative overflow-hidden bg-[#1a3a52] py-16">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_28%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SlideUp>
+            <h1 className="mb-4 text-4xl font-serif text-white md:text-5xl">Contact Us</h1>
+          </SlideUp>
+          <SlideUp className="max-w-2xl">
+            <p className="text-xl text-gray-200">
+              Connect with our advisors for verified project details, site visits, and pricing.
+            </p>
+          </SlideUp>
         </div>
       </section>
 
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2">
-            <div>
+            <SlideUp>
               <h2 className="mb-6 text-3xl font-serif text-[#1a3a52]">Send us a Message</h2>
               <p className="mb-8 text-gray-600">Submit your enquiry and our team will contact you shortly.</p>
 
@@ -143,213 +172,195 @@ export default function Contact() {
                 </div>
               ) : null}
 
-              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="mb-2 block text-sm text-gray-700">Full Name *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label htmlFor="email" className="mb-2 block text-sm text-gray-700">Email *</label>
+              <StaggerContainer>
+                <motion.form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                  <motion.div variants={fadeInUpVariants}>
+                    <label htmlFor="name" className="mb-2 block text-sm text-gray-700">Full Name *</label>
                     <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
                       onChange={handleChange}
                       required
                       className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
                     />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="mb-2 block text-sm text-gray-700">Phone *</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
-                    />
-                  </div>
-                </div>
+                  </motion.div>
 
-                <div>
-                  <label htmlFor="project" className="mb-2 block text-sm text-gray-700">Project (Optional)</label>
-                  <select
-                    id="project"
-                    name="project"
-                    value={formData.project}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 bg-white px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                  <motion.div variants={fadeInUpVariants} className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label htmlFor="email" className="mb-2 block text-sm text-gray-700">Email *</label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="phone" className="mb-2 block text-sm text-gray-700">Phone *</label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                      />
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={fadeInUpVariants}>
+                    <label htmlFor="project" className="mb-2 block text-sm text-gray-700">Project (Optional)</label>
+                    <select
+                      id="project"
+                      name="project"
+                      value={formData.project}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 bg-white px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                    >
+                      <option value="">Select a project</option>
+                      {projectOptions.map((projectName) => (
+                        <option key={projectName} value={projectName}>{projectName}</option>
+                      ))}
+                    </select>
+                  </motion.div>
+
+                  <motion.div variants={fadeInUpVariants}>
+                    <label htmlFor="enquiryType" className="mb-2 block text-sm text-gray-700">Enquiry Type *</label>
+                    <select
+                      id="enquiryType"
+                      name="enquiryType"
+                      value={formData.enquiryType}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 bg-white px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                    >
+                      {ENQUIRY_OPTIONS.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </motion.div>
+
+                  <motion.div variants={fadeInUpVariants} className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label htmlFor="preferredDate" className="mb-2 block text-sm text-gray-700">Preferred Date</label>
+                      <input
+                        type="date"
+                        id="preferredDate"
+                        name="preferredDate"
+                        value={formData.preferredDate}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="preferredTime" className="mb-2 block text-sm text-gray-700">Preferred Time</label>
+                      <input
+                        type="time"
+                        id="preferredTime"
+                        name="preferredTime"
+                        value={formData.preferredTime}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
+                      />
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={fadeInUpVariants}>
+                    <label htmlFor="message" className="mb-2 block text-sm text-gray-700">Message</label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={5}
+                      className="w-full resize-none border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none"
+                      placeholder="Share your requirements..."
+                    />
+                  </motion.div>
+
+                  <motion.button
+                    variants={fadeInUpVariants}
+                    whileHover={{ scale: 1.05, boxShadow: "0 14px 28px rgba(26,58,82,0.18)" }}
+                    whileTap={{ scale: 0.95 }}
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-[#1a3a52] py-4 text-white transition-colors hover:bg-[#2a4a62] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <option value="">Select a project</option>
-                    {projectOptions.map((projectName) => (
-                      <option key={projectName} value={projectName}>{projectName}</option>
-                    ))}
-                  </select>
-                </div>
+                    {submitting ? "Submitting..." : "Submit Enquiry"}
+                  </motion.button>
+                </motion.form>
+              </StaggerContainer>
+            </SlideUp>
 
-                <div>
-                  <label htmlFor="enquiryType" className="mb-2 block text-sm text-gray-700">Enquiry Type *</label>
-                  <select
-                    id="enquiryType"
-                    name="enquiryType"
-                    value={formData.enquiryType}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 bg-white px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
-                  >
-                    {ENQUIRY_OPTIONS.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
+            <StaggerContainer className="space-y-6">
+              <motion.div variants={fadeInUpVariants} className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-8">
+                <h2 className="mb-6 text-3xl font-serif text-[#1a3a52]">Get in Touch</h2>
+                <p className="mb-8 text-gray-600">Visit our office or request a callback instantly.</p>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label htmlFor="preferredDate" className="mb-2 block text-sm text-gray-700">Preferred Date</label>
-                    <input
-                      type="date"
-                      id="preferredDate"
-                      name="preferredDate"
-                      value={formData.preferredDate}
-                      onChange={handleChange}
-                      className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
-                    />
+                <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#1a3a52] px-3 py-1 text-sm text-white">
+                    <ShieldCheck size={16} /> {EKAM_BUSINESS.reraBadge}
                   </div>
-                  <div>
-                    <label htmlFor="preferredTime" className="mb-2 block text-sm text-gray-700">Preferred Time</label>
-                    <input
-                      type="time"
-                      id="preferredTime"
-                      name="preferredTime"
-                      value={formData.preferredTime}
-                      onChange={handleChange}
-                      className="w-full border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none focus:ring-2 focus:ring-[#1a3a52]"
-                    />
-                  </div>
+                  <p className="text-sm text-slate-600">{EKAM_BUSINESS.reraDisclaimer}</p>
                 </div>
 
-                <div>
-                  <label htmlFor="message" className="mb-2 block text-sm text-gray-700">Message</label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={5}
-                    className="w-full resize-none border border-gray-300 px-4 py-3 focus:border-[#1a3a52] focus:outline-none"
-                    placeholder="Share your requirements..."
-                  />
+                <div className="space-y-6">
+                  {[
+                    { icon: Phone, title: "Call / WhatsApp", value: EKAM_BUSINESS.phoneDisplay },
+                    { icon: Mail, title: "Email", value: EKAM_BUSINESS.email },
+                    { icon: MapPin, title: "Office Address", value: getOfficeAddressText() },
+                    { icon: Clock, title: "Business Hours", value: "Mon - Sat: 9:00 AM - 6:00 PM" },
+                  ].map((item) => (
+                    <div key={item.title} className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center bg-[#1a3a52] text-white">
+                        <item.icon size={20} />
+                      </div>
+                      <div>
+                        <h3 className="mb-1 text-lg text-[#1a3a52]">{item.title}</h3>
+                        <p className="text-gray-600">{item.value}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              </motion.div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-[#1a3a52] py-4 text-white transition-colors hover:bg-[#2a4a62] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {submitting ? "Submitting..." : "Submit Enquiry"}
-                </button>
-              </form>
-            </div>
-
-            <div>
-              <h2 className="mb-6 text-3xl font-serif text-[#1a3a52]">Get in Touch</h2>
-              <p className="mb-8 text-gray-600">Visit our office or request a callback instantly.</p>
-
-              <div className="mb-8 rounded-lg border border-slate-200 bg-slate-50 p-6">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#1a3a52] px-3 py-1 text-sm text-white">
-                  <ShieldCheck size={16} /> {EKAM_BUSINESS.reraBadge}
-                </div>
-                <p className="text-sm text-slate-600">{EKAM_BUSINESS.reraDisclaimer}</p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center bg-[#1a3a52] text-white"><Phone size={20} /></div>
-                  <div>
-                    <h3 className="mb-1 text-lg text-[#1a3a52]">Call / WhatsApp</h3>
-                    <p className="text-gray-600">{EKAM_BUSINESS.phoneDisplay}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center bg-[#1a3a52] text-white"><Mail size={20} /></div>
-                  <div>
-                    <h3 className="mb-1 text-lg text-[#1a3a52]">Email</h3>
-                    <p className="text-gray-600">{EKAM_BUSINESS.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center bg-[#1a3a52] text-white"><MapPin size={20} /></div>
-                  <div>
-                    <h3 className="mb-1 text-lg text-[#1a3a52]">Office Address</h3>
-                    <p className="text-gray-600">{getOfficeAddressText()}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center bg-[#1a3a52] text-white"><Clock size={20} /></div>
-                  <div>
-                    <h3 className="mb-1 text-lg text-[#1a3a52]">Business Hours</h3>
-                    <p className="text-gray-600">Mon - Sat: 9:00 AM - 6:00 PM</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-10 rounded-lg border border-gray-200 bg-gray-50 p-6">
+              <motion.div variants={fadeInUpVariants} className="rounded-[1.75rem] border border-gray-200 bg-white p-6">
                 <h3 className="mb-4 text-lg font-serif text-[#1a3a52]">Quick Actions</h3>
                 <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickAction("Schedule Site Visit")}
-                    className="w-full border border-gray-300 bg-white py-3 text-[#1a3a52] transition-colors hover:bg-gray-100"
-                  >
-                    Schedule Site Visit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickAction("Request Call Back")}
-                    className="w-full border border-gray-300 bg-white py-3 text-[#1a3a52] transition-colors hover:bg-gray-100"
-                  >
-                    Request Callback
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickAction("Download Brochure")}
-                    className="w-full border border-gray-300 bg-white py-3 text-[#1a3a52] transition-colors hover:bg-gray-100"
-                  >
-                    Download Brochure
-                  </button>
+                  {ENQUIRY_OPTIONS.slice(0, 3).map((option) => (
+                    <motion.button
+                      key={option}
+                      type="button"
+                      onClick={() => handleQuickAction(option)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full border border-gray-300 bg-white py-3 text-[#1a3a52] transition-colors hover:bg-gray-100"
+                    >
+                      {option}
+                    </motion.button>
+                  ))}
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </StaggerContainer>
           </div>
         </div>
       </section>
 
-      {/* Office Location Map */}
-      <section className="py-16 bg-gray-50">
+      <section className="bg-gray-50 py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif text-[#1a3a52] mb-4">Visit Our Office</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+          <FadeIn className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-serif text-[#1a3a52]">Visit Our Office</h2>
+            <p className="mx-auto max-w-2xl text-gray-600">
               Located in the heart of the city, our office is easily accessible for all your property needs.
             </p>
-          </div>
+          </FadeIn>
 
-          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+          <SlideUp className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.3578!2d78.4867!3d17.3850!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb99c7458e5c5d%3A0x1234567890abcdef!2sEkam%20Properties!5e0!3m2!1sen!2sin!4v1234567890!5m2!1sen!2sin"
               width="100%"
@@ -359,67 +370,34 @@ export default function Contact() {
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               title="Ekam Properties Office Location"
-            ></iframe>
-          </div>
+            />
+          </SlideUp>
         </div>
       </section>
 
-      {/* FAQ Section */}
       <section className="py-16">
         <div className="mx-auto max-w-4xl px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif text-[#1a3a52] mb-4">Frequently Asked Questions</h2>
+          <FadeIn className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-serif text-[#1a3a52]">Frequently Asked Questions</h2>
             <p className="text-gray-600">
               Find answers to common questions about our properties and services.
             </p>
-          </div>
+          </FadeIn>
 
-          <div className="space-y-4">
-            <details className="bg-white border border-gray-200 rounded-lg p-6">
-              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
-                How do I schedule a site visit?
-              </summary>
-              <div className="mt-4 text-gray-600">
-                You can schedule a site visit by filling out our contact form, calling us directly, or using our quick action buttons. Our team will coordinate with you to arrange a convenient time and provide transportation if needed.
-              </div>
-            </details>
-
-            <details className="bg-white border border-gray-200 rounded-lg p-6">
-              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
-                Are your projects DTCP approved?
-              </summary>
-              <div className="mt-4 text-gray-600">
-                Yes, all our projects are fully approved by DTCP (Directorate of Town and Country Planning) and comply with RERA regulations. We ensure complete transparency and legal compliance in all our developments.
-              </div>
-            </details>
-
-            <details className="bg-white border border-gray-200 rounded-lg p-6">
-              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
-                Do you provide loan assistance?
-              </summary>
-              <div className="mt-4 text-gray-600">
-                Yes, we partner with leading banks and financial institutions to provide home loan assistance. Our financial advisors can help you understand your eligibility, compare loan options, and guide you through the application process.
-              </div>
-            </details>
-
-            <details className="bg-white border border-gray-200 rounded-lg p-6">
-              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
-                What is the typical project completion timeline?
-              </summary>
-              <div className="mt-4 text-gray-600">
-                Our project timelines vary based on the scope and complexity, but we are committed to timely delivery. Residential projects typically take 24-36 months from launch to possession, with regular progress updates provided to all stakeholders.
-              </div>
-            </details>
-
-            <details className="bg-white border border-gray-200 rounded-lg p-6">
-              <summary className="text-lg font-serif text-[#1a3a52] cursor-pointer hover:text-[#2a4a62]">
-                Are there any hidden costs?
-              </summary>
-              <div className="mt-4 text-gray-600">
-                We maintain complete transparency in our pricing. All costs including registration, stamp duty, and other charges are clearly disclosed upfront. There are no hidden fees or additional costs beyond what&apos;s mentioned in your agreement.
-              </div>
-            </details>
-          </div>
+          <StaggerContainer className="space-y-4">
+            {faqs.map((faq) => (
+              <motion.details
+                key={faq.question}
+                variants={fadeInUpVariants}
+                className="rounded-[1.5rem] border border-gray-200 bg-white p-6"
+              >
+                <summary className="cursor-pointer text-lg font-serif text-[#1a3a52] hover:text-[#2a4a62]">
+                  {faq.question}
+                </summary>
+                <div className="mt-4 text-gray-600">{faq.answer}</div>
+              </motion.details>
+            ))}
+          </StaggerContainer>
         </div>
       </section>
     </div>

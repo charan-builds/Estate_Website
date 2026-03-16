@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { motion } from "framer-motion";
  
 import {
   ArrowLeft,
@@ -17,12 +20,19 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import SlideUp from "@/components/animations/SlideUp";
+import StaggerContainer from "@/components/animations/StaggerContainer";
+import { fadeInUpVariants } from "@/components/animations/motion";
 import { trackEvent } from "@/lib/analytics";
 import { EKAM_BUSINESS } from "@/lib/business";
+import { db } from "@/lib/firebase";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import GalleryModal from "@/components/projects/GalleryModal";
 import LeadForm from "@/components/projects/LeadForm";
 import MapSection from "@/components/projects/MapSection";
+import ProjectsSkeletonGrid from "@/components/projects/ProjectsSkeletonGrid";
+import { createInteractionLead } from "@/lib/lead";
+import { mapProjectSnapshot } from "@/lib/projects";
 import { Project, ProjectVideo } from "@/types/project";
 
 type Props = {
@@ -32,10 +42,17 @@ type Props = {
 export default function ProjectDetailsClient({ project }: Props) {
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
+  const [loadingRecommended, setLoadingRecommended] = useState(true);
 
   /* ---------------- TRACKING ---------------- */
 
   function handleCallClick() {
+    createInteractionLead({
+      projectId: project.id,
+      projectName: project.name,
+      source: "call",
+    });
     trackEvent("call_now_click", {
       project_slug: project.slug,
       project_name: project.name,
@@ -43,6 +60,11 @@ export default function ProjectDetailsClient({ project }: Props) {
   }
 
   function handleWhatsappClick() {
+    createInteractionLead({
+      projectId: project.id,
+      projectName: project.name,
+      source: "whatsapp",
+    });
     trackEvent("whatsapp_click", {
       project_slug: project.slug,
       project_name: project.name,
@@ -50,6 +72,11 @@ export default function ProjectDetailsClient({ project }: Props) {
   }
 
   function handleBrochureClick() {
+    createInteractionLead({
+      projectId: project.id,
+      projectName: project.name,
+      source: "brochure",
+    });
     trackEvent("brochure_click", {
       project_slug: project.slug,
       project_name: project.name,
@@ -62,6 +89,29 @@ export default function ProjectDetailsClient({ project }: Props) {
       project_name: project.name,
     });
   }, [project.slug, project.name]);
+
+  useEffect(() => {
+    const projectsQuery = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(projectsQuery, (snapshot) => {
+      const currentPriceBucket = project.price.replace(/[^\d.]/g, "");
+      const related = snapshot.docs
+        .map(mapProjectSnapshot)
+        .filter(Boolean)
+        .filter((item): item is Project => Boolean(item) && item.slug !== project.slug)
+        .filter(
+          (item) =>
+            item.location === project.location ||
+            item.propertyType === project.propertyType ||
+            item.price.replace(/[^\d.]/g, "") === currentPriceBucket
+        )
+        .slice(0, 4);
+
+      setRecommendedProjects(related);
+      setLoadingRecommended(false);
+    });
+
+    return unsubscribe;
+  }, [project.location, project.price, project.propertyType, project.slug]);
 
   /* ---------------- WHATSAPP ---------------- */
 
@@ -175,12 +225,19 @@ export default function ProjectDetailsClient({ project }: Props) {
 
       <section className="relative h-[460px] overflow-hidden">
 
-        <ImageWithFallback
-          src={project.gallery?.[0] || "/placeholder.jpg"}
-          alt={project.name}
-          className="h-full w-full object-cover"
-          priority
-        />
+        <motion.div
+          initial={{ scale: 1.06 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
+          className="h-full w-full"
+        >
+          <ImageWithFallback
+            src={project.gallery?.[0] || "/placeholder.jpg"}
+            alt={project.name}
+            className="h-full w-full object-cover"
+            priority
+          />
+        </motion.div>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
 
@@ -203,10 +260,10 @@ export default function ProjectDetailsClient({ project }: Props) {
 
       {/* ---------- PRICE INFO ---------- */}
 
-      <section className="-mt-14 px-4">
+      <SlideUp className="-mt-14 px-4">
         <div className="mx-auto max-w-7xl rounded-2xl border bg-white p-6 shadow-xl">
 
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-5">
+          <StaggerContainer className="grid gap-6 sm:grid-cols-2 md:grid-cols-5">
 
             <InfoBlock label="Configuration" value={project.configuration || "-"} />
 
@@ -225,9 +282,9 @@ export default function ProjectDetailsClient({ project }: Props) {
 
             <InfoBlock label="Land Area" value={project.landArea || "—"} />
 
-          </div>
+          </StaggerContainer>
         </div>
-      </section>
+      </SlideUp>
 
       {/* ---------- CONTENT ---------- */}
 
@@ -248,31 +305,31 @@ export default function ProjectDetailsClient({ project }: Props) {
 
             {projectStats.length > 0 && (
               <Section title="Project Stats">
-                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                <StaggerContainer className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                   {projectStats.map((item) => (
-                    <div key={item.label} className="rounded-xl border bg-white p-4 shadow-sm">
+                    <motion.div variants={fadeInUpVariants} key={item.label} className="rounded-xl border bg-white p-4 shadow-sm">
                       <div className="mb-3 inline-flex rounded-full bg-slate-100 p-2 text-[#1a3a52]">
                         <item.icon size={16} />
                       </div>
                       <p className="text-xs uppercase tracking-wide text-slate-500">{item.label}</p>
                       <p className="mt-1 text-lg font-semibold text-slate-900">{item.value}</p>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </StaggerContainer>
               </Section>
             )}
 
             {projectHighlights.length > 0 && (
               <Section title="Project Highlights">
                 <Card>
-                  <ul className="space-y-3">
+                  <StaggerContainer className="space-y-3">
                     {projectHighlights.map((item, index) => (
-                      <li key={`${item}-${index}`} className="flex items-start gap-3 text-slate-700">
+                      <motion.li variants={fadeInUpVariants} key={`${item}-${index}`} className="flex items-start gap-3 text-slate-700">
                         <Sparkles size={17} className="mt-0.5 text-[#1a3a52]" />
                         <span>{item}</span>
-                      </li>
+                      </motion.li>
                     ))}
-                  </ul>
+                  </StaggerContainer>
                 </Card>
               </Section>
             )}
@@ -327,19 +384,20 @@ export default function ProjectDetailsClient({ project }: Props) {
             {/* AMENITIES */}
 
             <Section title="Amenities">
-              <div className="grid gap-3 sm:grid-cols-2">
+                <StaggerContainer className="grid gap-3 sm:grid-cols-2">
 
                 {project.amenities.map((amenity, i) => (
-                  <div
+                  <motion.div
+                    variants={fadeInUpVariants}
                     key={i}
                     className="flex items-center gap-2 text-black rounded-lg border bg-white p-3 shadow-sm"
                   >
                     <CheckCircle2 size={18} className="text-[#1a3a52]" />
                     <span>{amenity}</span>
-                  </div>
+                  </motion.div>
                 ))}
 
-              </div>
+              </StaggerContainer>
             </Section>
             
 
@@ -347,10 +405,12 @@ export default function ProjectDetailsClient({ project }: Props) {
 
             <Section title={`Gallery (${project.gallery.length})`}>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <StaggerContainer className="grid gap-4 md:grid-cols-2">
 
                 {project.gallery.map((img, i) => (
-                  <button
+                  <motion.button
+                    variants={fadeInUpVariants}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     key={i}
                     onClick={() => setActiveImageIndex(i)}
                     className="overflow-hidden rounded-lg border"
@@ -358,19 +418,20 @@ export default function ProjectDetailsClient({ project }: Props) {
                     <ImageWithFallback
                       src={img}
                       alt={`${project.name} image ${i + 1}`}
-                      className="aspect-[4/3] w-full object-cover transition hover:scale-105"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out hover:scale-[1.08]"
                     />
-                  </button>
+                  </motion.button>
                 ))}
 
-              </div>
+              </StaggerContainer>
 
             </Section>
             {project.nearbyLocations && project.nearbyLocations.length > 0 && (
               <Section title="Nearby Locations">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <StaggerContainer className="grid gap-3 sm:grid-cols-2">
                   {project.nearbyLocations.map((place, i) => (
-                    <div
+                    <motion.div
+                      variants={fadeInUpVariants}
                       key={i}
                       className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md"
                     >
@@ -381,12 +442,53 @@ export default function ProjectDetailsClient({ project }: Props) {
                       <p className="mt-2 inline-flex rounded-full bg-[#1a3a52]/10 px-3 py-1 text-sm font-semibold text-[#1a3a52]">
                         {place.distance}
                       </p>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </StaggerContainer>
               </Section>
             )}
             <MapSection project={project} />
+
+            <Section title="Recommended Projects">
+              {loadingRecommended ? <ProjectsSkeletonGrid /> : null}
+              {!loadingRecommended && recommendedProjects.length ? (
+                <StaggerContainer className="grid gap-6 md:grid-cols-2">
+                  {recommendedProjects.map((item) => (
+                    <motion.div
+                      key={item.id || item.slug}
+                      variants={fadeInUpVariants}
+                      className="overflow-hidden rounded-xl border bg-white shadow-sm"
+                    >
+                      <Link href={`/projects/${item.slug}`}>
+                        <ImageWithFallback
+                          src={item.gallery[0]}
+                          alt={item.name}
+                          className="h-48 w-full object-cover transition-transform duration-700 ease-out hover:scale-[1.08]"
+                        />
+                      </Link>
+                      <div className="space-y-3 p-5">
+                        <p className="text-xs uppercase tracking-[0.2em] text-[#1a3a52]/60">
+                          {item.propertyType}
+                        </p>
+                        <h3 className="text-xl font-serif text-[#1a3a52]">{item.name}</h3>
+                        <p className="text-sm text-slate-600">{item.location}</p>
+                        <Link
+                          href={`/projects/${item.slug}`}
+                          className="inline-flex rounded-md bg-[#1a3a52] px-4 py-2 text-sm font-medium text-white"
+                        >
+                          View Project
+                        </Link>
+                      </div>
+                    </motion.div>
+                  ))}
+                </StaggerContainer>
+              ) : null}
+              {!loadingRecommended && !recommendedProjects.length ? (
+                <Card>
+                  <p className="text-slate-600">More recommended projects will appear here soon.</p>
+                </Card>
+              ) : null}
+            </Section>
 
           </div>
 
@@ -394,7 +496,7 @@ export default function ProjectDetailsClient({ project }: Props) {
 
           <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
 
-            <div className="rounded-2xl border bg-white p-6 shadow-xl">
+            <SlideUp className="rounded-2xl border bg-white p-6 shadow-xl">
 
               <div className="mb-4 flex items-center gap-2 rounded-lg bg-slate-50 p-3">
                 <ShieldCheck size={20} className="text-[#1a3a52]" />
@@ -414,30 +516,36 @@ export default function ProjectDetailsClient({ project }: Props) {
 
               <div className="space-y-3">
 
-                <a
+                <motion.a
                   href={`tel:${EKAM_BUSINESS.phoneDial}`}
                   onClick={handleCallClick}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1a3a52] px-4 py-3 font-semibold text-white hover:bg-[#224865]"
                 >
                   <Phone size={18} /> Call Now
-                </a>
+                </motion.a>
 
-                <a
+                <motion.a
                   href={whatsappLink}
                   target="_blank"
                   rel="noreferrer"
                   onClick={handleWhatsappClick}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-semibold text-white"
                 >
                   <MessageCircle size={18} /> WhatsApp
-                </a>
+                </motion.a>
 
-                <button
+                <motion.button
                   onClick={() => setIsLeadModalOpen(true)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#123147] px-4 py-3 font-semibold text-white"
                 >
                   <CalendarCheck size={18} /> Book Site Visit
-                </button>
+                </motion.button>
 
                {hasBrochure ? (
   <a
@@ -462,7 +570,7 @@ export default function ProjectDetailsClient({ project }: Props) {
 
               </div>
 
-            </div>
+            </SlideUp>
 
           </div>
         </div>
@@ -546,10 +654,12 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section>
-      <h2 className="mb-4 text-3xl font-serif text-[#1a3a52]">{title}</h2>
-      {children}
-    </section>
+    <SlideUp>
+      <section>
+        <h2 className="mb-4 text-3xl font-serif text-[#1a3a52]">{title}</h2>
+        {children}
+      </section>
+    </SlideUp>
   );
 }
 
@@ -559,9 +669,9 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <motion.div variants={fadeInUpVariants} className="rounded-xl border bg-white p-6 shadow-sm">
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -575,14 +685,15 @@ function InfoBlock({
   highlight?: boolean;
 }) {
   return (
-    <div
+    <motion.div
+      variants={fadeInUpVariants}
       className={`rounded-xl p-4 ${
         highlight ? "bg-emerald-50 text-emerald-800" : "bg-slate-50"
       }`}
     >
       <p className="text-xs uppercase text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-semibold">{value}</p>
-    </div>
+    </motion.div>
   );
 }
  

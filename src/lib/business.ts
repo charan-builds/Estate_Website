@@ -16,6 +16,12 @@ export const EKAM_BUSINESS = {
     "All project details are subject to RERA approvals and final agreements. Please verify official documents before booking.",
 };
 
+export const EKAM_SOCIAL_LINKS = {
+  instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "",
+  facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "",
+  youtube: process.env.NEXT_PUBLIC_YOUTUBE_URL ?? "",
+};
+
 export function getOfficeAddressText() {
   return `${EKAM_BUSINESS.name}, ${EKAM_BUSINESS.addressLines.join(", ")}`;
 }

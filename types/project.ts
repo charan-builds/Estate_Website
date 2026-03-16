@@ -9,12 +9,27 @@ export type ProjectStatus =
   | "Under Construction"
   | "New Launch";
  
-  export type PropertyType =
+export type PropertyType =
   | "Open Plots"
   | "Villas"
   | "Apartments"
   | "Farm Plots"
   | "Highway Plots";
+
+export type ProjectMainCategory =
+  | "residential"
+  | "commercial"
+  | "rental";
+
+export type ProjectSubCategory =
+  | "apartments"
+  | "villas"
+  | "plots"
+  | "offices"
+  | "retail"
+  | "warehouses"
+  | "short_term_rentals"
+  | "long_term_rentals";
 /* -----------------------------------------
    SPECIFICATIONS
 ------------------------------------------ */
@@ -57,6 +72,9 @@ export interface ProjectVideo {
 export interface Project {
   id?: string;
   propertyType: PropertyType;
+  mainCategory?: ProjectMainCategory | null;
+  subCategory?: ProjectSubCategory | null;
+  hotDeal?: boolean | null;
   name: string;
   slug: string;
   location: string;

@@ -33,6 +33,9 @@ type RawProjectData = Partial<Project> & {
   video?: unknown;
   videoType?: unknown;
   nearbyLocations?: unknown;
+  mainCategory?: unknown;
+  subCategory?: unknown;
+  hotDeal?: unknown;
 };
 
 /* -------------------------------------------------
@@ -94,6 +97,10 @@ export function mapProjectData(
     propertyType: isString(data.propertyType)
       ? data.propertyType
       : "Open Plots",
+
+    mainCategory: isString(data.mainCategory) ? data.mainCategory : null,
+    subCategory: isString(data.subCategory) ? data.subCategory : null,
+    hotDeal: typeof data.hotDeal === "boolean" ? data.hotDeal : false,
 
     coordinates: parseCoordinates(data),
 

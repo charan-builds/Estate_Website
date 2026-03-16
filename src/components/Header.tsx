@@ -5,12 +5,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import SocialLinks from "@/components/SocialLinks";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [keysPressed, setKeysPressed] = useState<string[]>([]);
+  const [scrolled, setScrolled] = useState(false);
 
   const navItems = [
     { label: "Home", path: "/" },
@@ -40,11 +43,27 @@ export default function Header() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [keysPressed, router]);
 
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 16);
+    }
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname?.startsWith(path);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+    <motion.header
+      className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+        scrolled
+          ? "border-white/40 bg-white/85 shadow-lg backdrop-blur-xl"
+          : "border-slate-200 bg-white shadow-sm"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* 🔰 LOGO + BRAND */}
@@ -75,25 +94,38 @@ export default function Header() {
               <Link
                 key={item.path}
                 href={item.path}
-                className={`text-sm tracking-wide transition ${
+                className={`relative text-sm tracking-wide transition ${
                   isActive(item.path)
                     ? "text-[#1a3a52] font-medium"
                     : "text-gray-600 hover:text-[#1a3a52]"
                 }`}
               >
                 {item.label}
+                <motion.span
+                  className="absolute -bottom-2 left-0 h-0.5 bg-[#1a3a52]"
+                  initial={false}
+                  animate={{
+                    width: isActive(item.path) ? "100%" : "0%",
+                    opacity: isActive(item.path) ? 1 : 0.5,
+                  }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                />
               </Link>
             ))}
 
             {/* 📞 WhatsApp CTA */}
-            <a
+            <motion.a
               href="https://wa.me/917901324545?text=Hi%20Ekam%20Properties,%20I%20am%20interested%20in%20your%20projects."
               target="_blank"
-              className="flex items-center gap-2 bg-[#1a3a52] text-white px-4 py-2 rounded hover:bg-[#234e6f]"
+              whileHover={{ scale: 1.05, boxShadow: "0 12px 28px rgba(26,58,82,0.18)" }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 320, damping: 18 }}
+              className="flex items-center gap-2 rounded bg-[#1a3a52] px-4 py-2 text-white hover:bg-[#234e6f]"
             >
               <Phone size={16} />
               Enquire
-            </a>
+            </motion.a>
+            <SocialLinks className="flex items-center gap-2 text-[#1a3a52]" />
           </nav>
 
           {/* 📱 MOBILE MENU */}
@@ -107,28 +139,38 @@ export default function Header() {
       </div>
 
       {/* 📱 MOBILE NAV */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t px-4 py-6 space-y-4">
+      <AnimatePresence>
+        {mobileMenuOpen ? (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="md:hidden overflow-hidden border-t bg-white/95 px-4 py-6 backdrop-blur"
+        >
           {navItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className="block text-gray-700"
+              className="block py-2 text-gray-700"
               onClick={() => setMobileMenuOpen(false)}
             >
               {item.label}
             </Link>
           ))}
 
-          <a
+          <motion.a
             href="https://wa.me/917901324545"
             target="_blank"
-            className="block bg-[#1a3a52] text-white text-center py-3 rounded"
+            whileTap={{ scale: 0.97 }}
+            className="mt-3 block rounded bg-[#1a3a52] py-3 text-center text-white"
           >
             WhatsApp Enquiry
-          </a>
-        </div>
-      )}
-    </header>
+          </motion.a>
+          <SocialLinks className="mt-4 flex items-center gap-3 text-[#1a3a52]" />
+        </motion.div>
+      ) : null}
+      </AnimatePresence>
+    </motion.header>
   );
 }
