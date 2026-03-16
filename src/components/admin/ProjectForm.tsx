@@ -652,7 +652,7 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
 
             <Field label="Main Category">
               <select
-                value={form.mainCategory}
+                value={form.mainCategory || ""} 
                 onChange={(event) => {
                   const nextMainCategory = event.target.value as FormState["mainCategory"];
                   setForm((previous) => ({
@@ -674,7 +674,8 @@ export default function ProjectForm({ projectId }: ProjectFormProps) {
 
             <Field label="Sub Category">
               <select
-                value={form.subCategory}
+                value={form.subCategory || ""
+                }
                 onChange={(event) => updateFormField("subCategory", event.target.value as FormState["subCategory"])}
                 className={INPUT_CLASS}
                 disabled={!form.mainCategory}

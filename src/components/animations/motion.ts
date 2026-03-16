@@ -1,11 +1,13 @@
 "use client";
 
+import type { Variants } from "framer-motion";
+
 export const viewportOnce = {
   once: true,
   amount: 0.2,
 } as const;
 
-export const fadeInUpVariants = {
+export const fadeInUpVariants: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
@@ -18,7 +20,7 @@ export const fadeInUpVariants = {
   },
 };
 
-export const fadeInVariants = {
+export const fadeInVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -29,7 +31,7 @@ export const fadeInVariants = {
   },
 };
 
-export const scaleInVariants = {
+export const scaleInVariants: Variants = {
   hidden: { opacity: 0, scale: 0.92 },
   visible: {
     opacity: 1,
@@ -42,7 +44,7 @@ export const scaleInVariants = {
   },
 };
 
-export const staggerContainerVariants = {
+export const staggerContainerVariants: Variants = {
   hidden: {},
   visible: {
     transition: {
